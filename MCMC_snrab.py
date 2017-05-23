@@ -52,17 +52,18 @@ def lnprob(theta, ssfr, snr, snr_err):
 
 
 ndim = 3
+#nwalkers = 500
 nwalkers = 500
 pos_min = np.array([5e-16, 0., 1e-13])
 pos_max = np.array([5e-13, 2., 1e-9])
 psize = pos_max - pos_min
 pos = [pos_min + psize*np.random.rand(ndim) for ii in range(nwalkers)]
 
-sampler = emcee.EnsembleSampler(nwalkers, ndim, lnprob, args=(ssfr_data, snr_data, snr_err_data), threads=4)
+sampler = emcee.EnsembleSampler(nwalkers, ndim, lnprob, args=(ssfr_data, snr_data, snr_err_data), threads=1)
 pos, prob, state = sampler.run_mcmc(pos, 200)
 sampler.reset()
 
-pos, prob, state = sampler.run_mcmc(pos, 7000)
+pos, prob, state = sampler.run_mcmc(pos, 20000)
 
 samples = sampler.flatchain
 print np.shape(samples)
