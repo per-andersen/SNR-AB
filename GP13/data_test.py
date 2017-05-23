@@ -24,14 +24,16 @@ x_points_manucci = data_points_manucci[:,0]
 y_points_manucci = data_points_manucci[:,1]
 
 
-plt.figure()
+ax = plt.subplot()
 plt.xlabel(r'log[sSFR]')
 plt.ylabel(r'log[sSNR]')
 plt.xlim((-12.5,-8))
-plt.ylim((-15,-11.75))
-plt.errorbar(x_points,y_points,fmt='o',yerr=[y_points-y_points_upper, y_points_lower-y_points])
-plt.plot(x_points_manucci, y_points_manucci,'s')
-plt.plot(x_line,y_line + np.log10(2),'-')
-plt.plot(x_line_manucci,y_line_manucci,'--')
+plt.ylim((0.5*10e-15,0.5*10e-12))
+#plt.ylim((-15,-11.75))
+#plt.errorbar(x_points,y_points,fmt='o',yerr=[y_points-y_points_upper, y_points_lower-y_points])
+plt.plot(x_points_manucci, 10**y_points_manucci,'s')
+#plt.plot(x_line,y_line + np.log10(2),'-')
+#plt.plot(x_line_manucci,y_line_manucci,'--')
+ax.set_yscale("log")
 plt.plot()
 plt.show()
