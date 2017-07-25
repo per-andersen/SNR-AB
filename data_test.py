@@ -9,8 +9,8 @@ data_points_manucci = np.genfromtxt('GP13/mannuccipnts.dat')
 
 x_points_manucci = data_points_manucci[:,0]
 y_points_manucci = data_points_manucci[:,1]
-print x_points_manucci
-print y_points_manucci
+#print x_points_manucci
+#print y_points_manucci
 
 ssfr_man = mannucci[:,0]
 snr_man = mannucci[:,1]
@@ -26,6 +26,7 @@ ssfr_sul = sullivan[:,0]
 snr_sul = sullivan[:,1]
 snr_err_sul = sullivan[:,2]
 
+'''
 ax = plt.subplot()
 plt.xlim((-12.5,-8))
 plt.ylim((0.5*10e-15,0.5*10e-12))
@@ -36,5 +37,17 @@ plt.plot(x_points_manucci, 10**y_points_manucci,'s')
 ax.set_yscale("log")
 plt.legend(loc=2)
 plt.show()
+'''
 
-print ssfr_man
+#print np.log10(snr_sul-snr_err_sul)
+
+#print np.log10(snr_mat + snr_err_upp_mat)
+#print np.log10(snr_mat - snr_err_low_mat)
+print np.log10(snr_mat) - np.log10(snr_mat - snr_err_low_mat)
+print np.log10(snr_mat) - np.log10(snr_mat + snr_err_upp_mat)
+print ""
+#print np.log10(snr_sul - snr_err_sul)
+#print np.log10(snr_sul + snr_err_sul)
+print np.log10(snr_sul) - np.log10(snr_sul - snr_err_sul)
+print np.log10(snr_sul) - np.log10(snr_sul + snr_err_sul)
+

@@ -7,6 +7,7 @@ mathew = np.genfromtxt('Smith_2012_Figure5_Results.txt')
 sullivan = np.genfromtxt('Smith_2012_Figure5_Sullivan_Results.txt')
 data_points_manucci = np.genfromtxt('../GP13/mannuccipnts.dat')
 
+mathew = np.delete(mathew,1, axis=0)
 x_points_manucci = data_points_manucci[:,0]
 y_points_manucci = data_points_manucci[:,1]
 print x_points_manucci
@@ -29,11 +30,11 @@ snr_err_sul = sullivan[:,2]
 ax = plt.subplot()
 plt.xlim((-12.5,-8))
 plt.ylim((0.5*10e-15,0.5*10e-12))
-plt.errorbar(ssfr_man, snr_man, yerr=(snr_err_low_man, snr_err_upp_man),fmt='o',label='Manucci')
+#plt.errorbar(ssfr_man, snr_man, yerr=(snr_err_low_man, snr_err_upp_man),fmt='o',label='Manucci')
 plt.errorbar(ssfr_mat, snr_mat, yerr=(snr_err_low_mat, snr_err_upp_mat),fmt='o',label='Smith')
 plt.errorbar(ssfr_sul, snr_sul, yerr=(snr_err_sul),fmt='o',label='Sullivan')
-plt.plot(x_points_manucci, 10**y_points_manucci,'s')
-ax.set_yscale("log")
+#plt.plot(x_points_manucci, 10**y_points_manucci,'s')
+#ax.set_yscale("log")
 plt.legend(loc=2)
 plt.show()
 
