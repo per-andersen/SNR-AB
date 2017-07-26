@@ -99,8 +99,6 @@ def plot_data(theta):
 
 def new_snr(logssfr,theta):
 	k1, k2, logssfr1, logssfr2, logssfra = theta
-	
-
 	snr_return = np.zeros(len(logssfr))
 	
 	for ii in np.arange(len(logssfr)):
@@ -135,7 +133,7 @@ def run_scipy():
 
 	theta_pass = -12.4, 0.009, -9.5, -10.9, -1500.
 	nll = lambda *args: -lnlike(*args)
-	result = opt.minimize(nll, [theta_pass],args=(logssfr,logsnr,snr_err),options={'disp': False})
+	result = opt.minimize(nll, [theta_pass],args=(logssfr,logsnr,snr_err),options={'disp': True})
 	
 	return result.x
 
@@ -213,28 +211,28 @@ def run_emcee():
 		print np.shape(samples)
 
 	plt.figure()
-	plt.hist(samples[:,0],bins=200)
+	plt.hist(samples[:,0],bins=300)
 	plt.xlabel('k1')
 
 	plt.figure()
-	plt.hist(samples[:,1],bins=200)
+	plt.hist(samples[:,1],bins=300)
 	plt.xlabel('k2')
 
 	plt.figure()
-	plt.hist(samples[:,2],bins=200)
+	plt.hist(samples[:,2],bins=300)
 	plt.xlabel('ssfr1')
 
 	plt.figure()
-	plt.hist(samples[:,3],bins=200)
+	plt.hist(samples[:,3],bins=300)
 	plt.xlabel('ssfr2')
 
 	plt.figure()
-	plt.hist(samples[:,4],bins=200)
+	plt.hist(samples[:,4],bins=300)
 	plt.xlabel('ssfra')
 
 	c = ChainConsumer()
 	c.add_chain(samples, parameters=["$k_1$", "$k_2$", "$sSFR_1$", "$sSFR_2$", "$sSFR_a$"])
-	c.configure(smooth=False,bins=100,sigmas=[0,1,2,3])
+	c.configure(smooth=False,bins=300,sigmas=[0,1,2,3])
 	#figw = c.plotter.plot_walks()
 	fig = c.plotter.plot()
 	fig.savefig(root_dir + 'Plots/marginals_abnew_log.pdf')
@@ -259,8 +257,11 @@ if __name__ == '__main__':
 	t0 = time.time()
 	
 	root_dir = '/Users/perandersen/Data/SNR-AB/'
+	
+	theta_pass = run_emcee()
 	theta_pass = run_scipy()
-	#theta_pass = run_emcee()
+
+	#theta_pass = -12.2, 0.3, -9., -10., -20.
 	
 	print theta_pass
 	#logssfr, logsnr, snr_err = read_data()
@@ -278,5 +279,5 @@ if __name__ == '__main__':
 	
 	plot_data(theta_pass)
 
-	#plt.show()
+	plt.show()
 

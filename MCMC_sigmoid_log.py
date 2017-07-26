@@ -86,6 +86,8 @@ def plot_data(theta):
 	logsnr_values = sigmoid_snr(logssfr_values, theta)
 	snr_values = 10.**logsnr_values
 	plt.figure()
+	plt.xlabel('log(sSFR)',size='large')
+	plt.ylabel('sSNR',size='large')
 	ax = plt.subplot()
 	plt.xlim((-13,-8))
 	ax.set_yscale("log")
@@ -119,18 +121,18 @@ def run_emcee():
 		print 'Chains do not exist, computing chains...'
 
 		# Setting parameter top hat priors
-		a_min, a_max = 0.01, 50.
-		b_min, b_max = -22, -10.
-		c_min, c_max = -20., -2.
-		d_min, d_max = 0.01, 15.
+		a_min, a_max = 0.001, 50.
+		b_min, b_max = -50, -5.
+		c_min, c_max = -50., 20.
+		d_min, d_max = 0.0001, 20.
 
 		#ML parameters: [  1.20103392 -13.38221532 -10.07802213   2.61730236]
 
 		# Setting emcee run parameters
 		ndim = 4	
-		nwalkers = 500
-		nburn = 1800
-		nsample = 17000
+		nwalkers = 600
+		nburn = 2500
+		nsample = 20000
 
 		# These functions define the prior and the function to apply prior to likelihood
 		def lnprior(theta):
@@ -352,8 +354,8 @@ if __name__ == '__main__':
 	
 	root_dir = '/Users/perandersen/Data/SNR-AB/'
 
-	#theta_pass = run_scipy()
-	theta_pass = run_emcee()
+	#theta_pass = run_emcee()
+	theta_pass = run_scipy()
 	#theta_pass = run_grid()
 	
 	
