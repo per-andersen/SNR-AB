@@ -102,7 +102,7 @@ def run_grid():
 	else:
 		print 'Grid does not exist, computing grid...'
 	
-		resolution = 60
+		resolution = 100
 
 		'''
 		# These limits give a pretty decent overview of this local extrema
@@ -116,7 +116,7 @@ def run_grid():
 		a_min, a_max = 2e-13, 6e-13
 		b_min, b_max = 6e-15, 6e-14
 		c_min, c_max = 6e-11, 3e-10
-		d_min, d_max = 8e9, 50e9
+		d_min, d_max = 7e9, 80e9
 
 		# Reading in data
 		logssfr, logsnr, snr_err = read_data()
@@ -148,12 +148,6 @@ def run_grid():
  		pick.dump(result,output)
  		output.close()
 
-	#plt.figure()
-	#plt.xlabel("a")
-	#plt.ylabel("b")
-	#im = plt.imshow(likelihoods[:,:,10,10],interpolation='none',origin='lower',cmap=cm.Greys,extent=(a_min, a_max, b_min, b_max))
-	#plt.colorbar()
-
 	a_like = np.zeros(resolution)
 	b_like = np.zeros(resolution)
 	c_like = np.zeros(resolution)
@@ -164,7 +158,7 @@ def run_grid():
 		c_like[ii] = np.sum(likelihoods[:,:,ii,:])
 		d_like[ii] = np.sum(likelihoods[:,:,:,ii])
 	
-	'''
+	
 	plt.figure()
 	ax = plt.subplot()
 	ax.set_xscale("log")
@@ -188,8 +182,8 @@ def run_grid():
 	ax.set_xscale("log")
 	plt.plot(d_par,d_like)
 	plt.xlabel('d')
-	'''
 	
+
 	a_fit = a_par[np.argmax(a_like)]
 	b_fit = b_par[np.argmax(b_like)]
 	c_fit = c_par[np.argmax(c_like)]

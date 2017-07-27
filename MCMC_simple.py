@@ -61,6 +61,7 @@ def plot_data(theta):
 	plt.xlabel('log(sSFR)',size='large')
 	plt.ylabel('sSNR',size='large')
 	plt.xlim((-13,-8))
+	plt.ylim((2e-14,1e-12))
 	ax.set_yscale("log")
 	plt.plot(logssfr_values, snr_values,c='k',lw=3)
 	plt.errorbar(logssfr_sul,snr_sul,yerr=snr_err_sul,fmt='o',label='Sullivan et al. (2006)')
