@@ -1,3 +1,4 @@
+import utility_functions as util
 import os
 import numpy as np
 import emcee
@@ -6,70 +7,6 @@ from chainconsumer import ChainConsumer
 import scipy.optimize as opt
 import pickle as pick
 import time
-
-def read_data():
-	mathew = np.genfromtxt('Mathew/Smith_2012_Figure5_Results.txt')
-	sullivan = np.genfromtxt('Mathew/Smith_2012_Figure5_Sullivan_Results.txt')
-	mathew = np.delete(mathew,1, axis=0) #!!! Justify this
-
-	logssfr_mat = mathew[:,0]
-	snr_mat = mathew[:,1]
-	snr_err_upp_mat = mathew[:,2]
-	snr_err_low_mat = mathew[:,3]
-	snr_err_mat = np.sqrt(snr_err_low_mat**2 + snr_err_upp_mat**2) #!!! Check this is ok
-
-	logssfr_sul = sullivan[:,0]
-	snr_sul = sullivan[:,1]
-	snr_err_sul = sullivan[:,2]
-
-	logssfr = np.concatenate((logssfr_mat,logssfr_sul))
-	ssfr = 10**logssfr
-	snr = np.concatenate((snr_mat,snr_sul))
-	snr_err = np.concatenate((snr_err_mat,snr_err_sul))
-
-	return ssfr, snr, snr_err
-
-def read_data_names():
-	mathew = np.genfromtxt('Mathew/Smith_2012_Figure5_Results.txt')
-	sullivan = np.genfromtxt('Mathew/Smith_2012_Figure5_Sullivan_Results.txt')
-	mathew = np.delete(mathew,1, axis=0) #!!! Justify this
-
-	logssfr_mat = mathew[:,0]
-	snr_mat = mathew[:,1]
-	snr_err_upp_mat = mathew[:,2]
-	snr_err_low_mat = mathew[:,3]
-	snr_err_mat = np.sqrt(snr_err_low_mat**2 + snr_err_upp_mat**2) #!!! Check this is ok
-
-	logssfr_sul = sullivan[:,0]
-	snr_sul = sullivan[:,1]
-	snr_err_sul = sullivan[:,2]
-
-	logssfr = np.concatenate((logssfr_mat,logssfr_sul))
-	ssfr = 10**logssfr
-	snr = np.concatenate((snr_mat,snr_sul))
-	snr_err = np.concatenate((snr_err_mat,snr_err_sul))
-
-	return logssfr_sul, snr_sul, snr_err_sul, logssfr_mat, snr_mat, snr_err_mat
-
-def plot_data(theta):
-	#ssfr, snr, snr_err = read_data()
-	logssfr_sul, snr_sul, snr_err_sul, logssfr_mat, snr_mat, snr_err_mat = read_data_names()
-
-	ssfr_values = np.logspace(-13,-8,10000)
-	snr_values = new_snr(ssfr_values, theta)
-	plt.figure()
-	ax = plt.subplot()
-	plt.xlabel('log(sSFR)',size='large')
-	plt.ylabel('sSNR',size='large')
-	plt.xlim((-13,-8))
-	plt.ylim((2e-14,1e-12))
-	ax.set_yscale("log")
-	plt.plot(np.log10(ssfr_values), snr_values,c='k',lw=3)
-	plt.errorbar(logssfr_sul,snr_sul,yerr=snr_err_sul,fmt='o',label='Sullivan et al. (2006)')
-	plt.errorbar(logssfr_mat,snr_mat,yerr=snr_err_mat,fmt='x',label='Smith et al. (2012)')
-	plt.legend(frameon=False, loc=2, fontsize=16)
-
-	plt.savefig(root_dir + 'Plots/model_abnew.pdf')
 
 def new_snr(ssfr,theta):
 	k1, k2, ssfr1, ssfr2, ssfra = theta
@@ -96,9 +33,9 @@ def lnlike(theta, ssfr, snr, snr_err):
 	return -0.5*(np.sum( ((snr-snr_model)/snr_err)**2.  ))
 
 def run_emcee():
-	if os.path.isfile(root_dir + 'MCMC_abnew.pkl'):
+	if os.path.isfile(root_dir + 'Data/MCMC_abnew.pkl'):
 		print 'Chains already exist, using existing chains'
-		pkl_data_file = open(root_dir + 'MCMC_abnew.pkl','rb')
+		pkl_data_file = open(root_dir + 'Data/MCMC_abnew.pkl','rb')
 		samples = pick.load(pkl_data_file)
 		pkl_data_file.close()
 		print np.shape(samples)
@@ -121,15 +58,22 @@ def run_emcee():
 		ssfra_min, ssfra_max = 2e-11, 9e-10
 
 		ndim = 5	
-		nwalkers = 500
-		nburn = 2000
-		nsample = 15000
+		nwalkers = 300
+		nburn = 20
+		nsample = 150
 
 		# These functions define the prior and the function to apply prior to likelihood
 		def lnprior(theta):
 			k1, k2, ssfr1, ssfr2, ssfra = theta
-
+			
 			if (k1_min < k1 < k1_max) and (k2_min < k2 < k2_max) and (ssfr1_min < ssfr1 < ssfr1_max) and (ssfr2_min < ssfr2 < ssfr2_max) and (ssfra_min < ssfra < ssfra_max):
+				
+				slope_term = k1 / ssfr1 + k2*np.log(ssfr1 / ssfr2)
+				if not np.isclose(k1,ssfr1*slope_term):
+					return -np.inf
+				if not np.isclose(k2*ssfra,ssfr2*slope_term):
+					return -np.inf
+
 				return 0.
 			return -np.inf
 
@@ -140,7 +84,7 @@ def run_emcee():
 			return lp + lnlike(theta, logssfr, logsnr, snr_err)
 
 		# Reading in data
-		ssfr, snr, snr_err = read_data()
+		ssfr, snr, snr_err = util.read_data()
 
 		# Setting initial position of walkers
 		pos_min = np.array([k1_min, k2_min, ssfr1_min, ssfr2_min, ssfra_min])
@@ -277,7 +221,7 @@ def run_grid():
 		ssfra_min, ssfra_max = 5.2e-11, 7.e-10
 
 		# Reading in data
-		ssfr, snr, snr_err = read_data()
+		ssfr, snr, snr_err = util.read_data()
 
 		k1_par = np.linspace(k1_min,k1_max,resolution)
 		k2_par = np.linspace(k2_min,k2_max,resolution)
@@ -378,12 +322,13 @@ if __name__ == '__main__':
 	t0 = time.time()
 
 	root_dir = '/Users/perandersen/Data/SNR-AB/'
+	model_name = 'abnew'
 
 	#theta_pass = run_emcee()
 	theta_pass = run_grid()
 
 
-	ssfr, snr, snr_err = read_data()
+	ssfr, snr, snr_err = util.read_data()
 	chi2 = np.sum( ((snr-new_snr(ssfr, theta_pass))/snr_err)**2.  )
 	bic = chi2 + 5.*np.log(len(ssfr))
 	aic = chi2 + 5.*2.
@@ -395,7 +340,7 @@ if __name__ == '__main__':
 	print "chi2", chi2
 	print "r.chi2", chi2 / (len(ssfr)-5.)
 	
-	plot_data(theta_pass)
+	util.plot_data_log(root_dir,model_name,theta_pass,new_snr)
 
 	plt.show()
 
