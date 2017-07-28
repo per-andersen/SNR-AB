@@ -1,3 +1,4 @@
+import utility_functions as util
 import os
 import numpy as np
 import emcee
@@ -6,70 +7,6 @@ import matplotlib.cm as cm
 from chainconsumer import ChainConsumer
 import pickle as pick
 import time
-
-def read_data_simple():
-	mathew = np.genfromtxt('Mathew/Smith_2012_Figure5_Results.txt')
-	sullivan = np.genfromtxt('Mathew/Smith_2012_Figure5_Sullivan_Results.txt')
-	mathew = np.delete(mathew,1, axis=0) #!!! Justify this
-
-	logssfr_mat = mathew[:,0]
-	snr_mat = mathew[:,1]
-	snr_err_upp_mat = mathew[:,2]
-	snr_err_low_mat = mathew[:,3]
-	snr_err_mat = np.sqrt(snr_err_low_mat**2 + snr_err_upp_mat**2) #!!! Check this is ok
-
-	logssfr_sul = sullivan[:,0]
-	snr_sul = sullivan[:,1]
-	snr_err_sul = sullivan[:,2]
-
-	logssfr = np.concatenate((logssfr_mat,logssfr_sul))
-	ssfr = 10**logssfr
-	snr = np.concatenate((snr_mat,snr_sul))
-	snr_err = np.concatenate((snr_err_mat,snr_err_sul))
-
-	return logssfr, ssfr, snr, snr_err
-
-def read_data_names():
-	mathew = np.genfromtxt('Mathew/Smith_2012_Figure5_Results.txt')
-	sullivan = np.genfromtxt('Mathew/Smith_2012_Figure5_Sullivan_Results.txt')
-	mathew = np.delete(mathew,1, axis=0) #!!! Justify this
-
-	logssfr_mat = mathew[:,0]
-	snr_mat = mathew[:,1]
-	snr_err_upp_mat = mathew[:,2]
-	snr_err_low_mat = mathew[:,3]
-	snr_err_mat = np.sqrt(snr_err_low_mat**2 + snr_err_upp_mat**2) #!!! Check this is ok
-
-	logssfr_sul = sullivan[:,0]
-	snr_sul = sullivan[:,1]
-	snr_err_sul = sullivan[:,2]
-
-	logssfr = np.concatenate((logssfr_mat,logssfr_sul))
-	ssfr = 10**logssfr
-	snr = np.concatenate((snr_mat,snr_sul))
-	snr_err = np.concatenate((snr_err_mat,snr_err_sul))
-
-	return logssfr_sul, snr_sul, snr_err_sul, logssfr_mat, snr_mat, snr_err_mat
-
-def plot_data(theta):
-	logssfr_sul, snr_sul, snr_err_sul, logssfr_mat, snr_mat, snr_err_mat = read_data_names()
-
-	logssfr_values = np.linspace(-13,-8,100000)
-	snr_values = simple_snr(logssfr_values, theta)
-	plt.figure()
-	ax = plt.subplot()
-	plt.xlabel('log(sSFR)',size='large')
-	plt.ylabel('sSNR',size='large')
-	plt.xlim((-13,-8))
-	plt.ylim((2e-14,1e-12))
-	ax.set_yscale("log")
-	plt.plot(logssfr_values, snr_values,c='k',lw=3)
-	plt.errorbar(logssfr_sul,snr_sul,yerr=snr_err_sul,fmt='o',label='Sullivan et al. (2006)')
-	plt.errorbar(logssfr_mat,snr_mat,yerr=snr_err_mat,fmt='x',label='Smith et al. (2012)')
-	plt.legend(frameon=False, loc=2, fontsize=17)
-
-	plt.savefig(root_dir + 'Plots/model_simple.pdf')
-
 
 def simple_snr(logssfr,theta):
 	a, b = theta
@@ -105,7 +42,7 @@ def run_grid():
 	b_min, b_max = 0.0002, 0.0008
 
 	# Reading in data
-	logssfr, ssfr,  snr, snr_err = read_data()
+	logssfr, ssfr,  snr, snr_err = util.read_data_with_log()
 
 	likelihoods = np.ones((resolution,resolution))
 
@@ -144,6 +81,7 @@ if __name__ == '__main__':
 	t0 = time.time()
 	
 	root_dir = '/Users/perandersen/Data/SNR-AB/'
+	model_name = 'simple'
 	
 	if os.path.isfile(root_dir + 'Data/MCMC_simple.pkl'):
 		print 'Chains already exist, using existing chains...'
@@ -153,7 +91,7 @@ if __name__ == '__main__':
 		print np.shape(samples)
 	else:
 		print 'Chains do not exist, computing chains...'
-		logssfr, ssfr, snr, snr_err = read_data()
+		logssfr, ssfr, snr, snr_err = util.read_data_with_log()
 
 		ndim = 2	
 		nwalkers = 700
@@ -198,7 +136,7 @@ if __name__ == '__main__':
 	print 'A', a_fit
 	print 'B', c_fit
 	
-	logssfr, ssfr, snr, snr_err = read_data_simple()
+	logssfr, ssfr, snr, snr_err = util.read_data_with_log()
 	
 	theta_pass = a_fit, c_fit
 	chi2 = np.sum( ((snr-simple_snr(logssfr, theta_pass))/snr_err)**2.  )
@@ -212,7 +150,7 @@ if __name__ == '__main__':
 	print "chi2", chi2
 	print "r.chi2", chi2 / (len(logssfr)-2.)
 	#theta_pass = 5e-14, 3e-4
-	plot_data(theta_pass)
+	util.plot_data(root_dir, model_name, theta_pass, simple_snr)
 	
 	plt.show()
 

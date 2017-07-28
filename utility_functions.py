@@ -28,7 +28,17 @@ def read_data():
 
 	return ssfr, snr, snr_err
 
-def plot_data_log(root_dir,model_name, theta,snr_func):
+def read_data_with_log():
+	logssfr_sul, snr_sul, snr_err_sul, logssfr_mat, snr_mat, snr_err_mat = read_data_names()
+
+	logssfr = np.concatenate((logssfr_mat,logssfr_sul))
+	ssfr = 10**logssfr
+	snr = np.concatenate((snr_mat,snr_sul))
+	snr_err = np.concatenate((snr_err_mat,snr_err_sul))
+
+	return logssfr, ssfr, snr, snr_err
+
+def plot_data_log(root_dir, model_name, theta, snr_func):
 	logssfr_sul, snr_sul, snr_err_sul, logssfr_mat, snr_mat, snr_err_mat = read_data_names()
 
 	ssfr_values = np.logspace(-13,-8,10000)
@@ -46,3 +56,24 @@ def plot_data_log(root_dir,model_name, theta,snr_func):
 	plt.legend(frameon=False, loc=2, fontsize=16)
 
 	plt.savefig(root_dir + 'Plots/model_' + model_name + '.pdf')
+
+def plot_data(root_dir, model_name, theta, snr_func):
+	logssfr_sul, snr_sul, snr_err_sul, logssfr_mat, snr_mat, snr_err_mat = read_data_names()
+
+	logssfr_values = np.linspace(-13,-8,100000)
+	snr_values = snr_func(logssfr_values, theta)
+	plt.figure()
+	ax = plt.subplot()
+	plt.xlabel('log(sSFR)',size='large')
+	plt.ylabel('sSNR',size='large')
+	plt.xlim((-13,-8))
+	plt.ylim((2e-14,1e-12))
+	ax.set_yscale("log")
+	plt.plot(logssfr_values, snr_values,c='k',lw=3)
+	plt.errorbar(logssfr_sul,snr_sul,yerr=snr_err_sul,fmt='o',label='Sullivan et al. (2006)')
+	plt.errorbar(logssfr_mat,snr_mat,yerr=snr_err_mat,fmt='x',label='Smith et al. (2012)')
+	plt.legend(frameon=False, loc=2, fontsize=17)
+
+	plt.savefig(root_dir + 'Plots/model_' + model_name + '.pdf')
+
+
