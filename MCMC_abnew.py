@@ -332,6 +332,7 @@ if __name__ == '__main__':
 	chi2 = np.sum( ((snr-new_snr(ssfr, theta_pass))/snr_err)**2.  )
 	bic = chi2 + 5.*np.log(len(ssfr))
 	aic = chi2 + 5.*2.
+	ks_test = util.ks_test(ssfr,snr,new_snr,theta_pass)
 
 	print "Done in", time.time() - t0, "seconds"
 	print ""
@@ -339,6 +340,7 @@ if __name__ == '__main__':
 	print "AIC", aic
 	print "chi2", chi2
 	print "r.chi2", chi2 / (len(ssfr)-5.)
+	print "KS", ks_test
 	
 	util.plot_data_log(root_dir,model_name,theta_pass,new_snr)
 
