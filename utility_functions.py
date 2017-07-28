@@ -76,4 +76,35 @@ def plot_data(root_dir, model_name, theta, snr_func):
 
 	plt.savefig(root_dir + 'Plots/model_' + model_name + '.pdf')
 
+def ks_test(ssfr,snr,snr_func,theta,visualise=False):
+
+	## First we make sure everything is sorted
+	snr = snr[np.argsort(ssfr)]
+	ssfr = np.sort(ssfr)
+
+	## Compute model snr values
+	snr_model = snr_func(ssfr,theta)
+
+	ks_data = np.cumsum(snr) / np.sum(snr)
+	ks_model = np.cumsum(snr_model) / np.sum(snr_model)
+
+	ks_result = np.abs(np.max(ks_data - ks_model))
+
+	if visualise:
+		plt.figure()
+		plt.ylim((0,1))
+		plt.xlim((np.min(ssfr),np.max(ssfr)))
+		plt.plot(ssfr,ks_model)
+		plt.plot(ssfr,ks_data)
+		ks_index = np.argmax(np.abs(ks_data - ks_model))
+		plt.axvline(ssfr[ks_index],ymin=np.min((ks_model[ks_index],ks_data[ks_index])),ymax=np.max((ks_model[ks_index],ks_data[ks_index])),color='k',lw=3)
+	return ks_result
+
+
+
+
+
+
+
+
 

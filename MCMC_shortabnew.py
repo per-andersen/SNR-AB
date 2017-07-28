@@ -231,7 +231,7 @@ def run_grid():
 		s2_like[ii] = np.sum(likelihoods[:,:,ii,:])
 		sa_like[ii] = np.sum(likelihoods[:,:,:,ii])
 	
-	
+	'''
 	plt.figure()
 	ax = plt.subplot()
 	ax.set_xscale("log")
@@ -255,7 +255,7 @@ def run_grid():
 	ax.set_xscale("log")
 	plt.plot(sa_par,sa_like,'x')
 	plt.xlabel('ssfra')
-	
+	'''
 
 	# These are the marginalised maximum likelihood parameters
 	k2_fit = k2_par[np.argmax(k2_like)]

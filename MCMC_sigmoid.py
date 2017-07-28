@@ -141,12 +141,12 @@ if __name__ == '__main__':
 
 	#theta_pass = run_scipy()
 	theta_pass = run_grid()
-
 	
 	ssfr, snr, snr_err = util.read_data()
 	chi2 = np.sum( ((snr-sigmoid_snr(ssfr, theta_pass))/snr_err)**2.  )
 	bic = chi2 + 4.*np.log(len(ssfr))
 	aic = chi2 + 4.*2.
+	ks_test = util.ks_test(ssfr,snr,sigmoid_snr,theta_pass)
 
 	print "Done in", time.time() - t0, "seconds"
 	print ""
@@ -154,9 +154,10 @@ if __name__ == '__main__':
 	print "AIC", aic
 	print "chi2", chi2
 	print "r.chi2", chi2 / (len(ssfr)-4.)
+	print "KS", ks_test
 
 	
-	#theta_pass = 6e-13, 4.4e-14, 0.4e-9, 1.1e10
+
 	util.plot_data_log(root_dir,model_name, theta_pass, sigmoid_snr)
 
 	plt.show()
