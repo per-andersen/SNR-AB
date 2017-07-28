@@ -1,3 +1,4 @@
+import utility_functions as util
 import os
 import numpy as np
 import emcee
@@ -53,7 +54,7 @@ def read_data():
 	return ssfr, snr, snr_err
 
 def plot_data(theta):
-	logssfr_sul, snr_sul, snr_err_sul, logssfr_mat, snr_mat, snr_err_mat = read_data_names()
+	logssfr_sul, snr_sul, snr_err_sul, logssfr_mat, snr_mat, snr_err_mat = util.read_data_names()
 
 	ssfr_values = np.logspace(-13,-8,10000)
 	snr_values = sigmoid_snr(ssfr_values, theta)
@@ -83,7 +84,7 @@ def lnlike(theta, ssfr, snr, snr_err):
 
 def run_scipy():
 	theta_pass = 6e-13, 4.4e-14, 1e-9, 1e10
-	ssfr, snr, snr_err = read_data()
+	ssfr, snr, snr_err = util.read_data()
 
 	nll = lambda *args: -lnlike(*args)
 	result = opt.minimize(nll, [theta_pass],args=(ssfr,snr,snr_err),options={'disp': True})
@@ -119,7 +120,7 @@ def run_grid():
 		d_min, d_max = 7e9, 80e9
 
 		# Reading in data
-		logssfr, logsnr, snr_err = read_data()
+		logssfr, logsnr, snr_err = util.read_data()
 
 		a_par = np.linspace(a_min,a_max,resolution)
 		b_par = np.linspace(b_min,b_max,resolution)
@@ -158,7 +159,7 @@ def run_grid():
 		c_like[ii] = np.sum(likelihoods[:,:,ii,:])
 		d_like[ii] = np.sum(likelihoods[:,:,:,ii])
 	
-	
+	'''
 	plt.figure()
 	ax = plt.subplot()
 	ax.set_xscale("log")
@@ -182,7 +183,7 @@ def run_grid():
 	ax.set_xscale("log")
 	plt.plot(d_par,d_like)
 	plt.xlabel('d')
-	
+	'''
 
 	a_fit = a_par[np.argmax(a_like)]
 	b_fit = b_par[np.argmax(b_like)]
@@ -204,7 +205,7 @@ if __name__ == '__main__':
 	theta_pass = run_grid()
 
 	
-	ssfr, snr, snr_err = read_data()
+	ssfr, snr, snr_err = util.read_data()
 	chi2 = np.sum( ((snr-sigmoid_snr(ssfr, theta_pass))/snr_err)**2.  )
 	bic = chi2 + 4.*np.log(len(ssfr))
 	aic = chi2 + 4.*2.
