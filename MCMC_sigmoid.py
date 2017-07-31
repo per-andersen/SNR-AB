@@ -32,11 +32,10 @@ def run_scipy():
 	return theta_pass
 
 def run_grid():
-	if os.path.isfile(root_dir + 'Data/MCMC_sigmoid_grid.pkl'):
+	if util.does_grid_exist(model_name,root_dir):
 		print 'Grid already exists, using existing chains...'
-		pkl_data_file = open(root_dir + 'Data/MCMC_sigmoid_grid.pkl','rb')
-		resolution, likelihoods, a_par, b_par, c_par, d_par, theta_max = pick.load(pkl_data_file)
-		pkl_data_file.close()
+		resolution, likelihoods, parameters, theta_max = util.read_grid(model_name,root_dir)
+		a_par, b_par, c_par, d_par = parameters 
 	else:
 		print 'Grid does not exist, computing grid...'
 	
@@ -78,11 +77,12 @@ def run_grid():
 						if likelihoods[ii,jj,kk,ll] > max_like:
 							max_like = likelihoods[ii,jj,kk,ll]
 							theta_max = a_par[ii], b_par[jj], c_par[kk], d_par[ll]
-							print "New max like:", max_like
-							print theta_max, "\n"
+							#print "New max like:", max_like
+							#print theta_max, "\n"
 		likelihoods /= np.sum(likelihoods)
 		output = open(root_dir + 'Data/MCMC_sigmoid_grid.pkl','wb')
-		result = resolution, likelihoods, a_par, b_par, c_par, d_par, theta_max
+		parameters = a_par, b_par, c_par, d_par
+		result = resolution, likelihoods, parameters, theta_max
  		pick.dump(result,output)
  		output.close()
 

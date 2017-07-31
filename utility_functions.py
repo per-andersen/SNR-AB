@@ -1,5 +1,29 @@
+import os
 import numpy as np
 import matplotlib.pyplot as plt
+import pickle as pick
+
+def do_chains_exist(model_name,root_dir):
+	if os.path.isfile(root_dir + 'Data/MCMC_' + model_name + '.pkl'):
+		return True
+	return False
+
+def read_chains(model_name,root_dir):
+	pkl_data_file = open(root_dir + 'Data/MCMC_' + model_name + '.pkl','rb')
+	samples = pick.load(pkl_data_file)
+	pkl_data_file.close()
+	return samples
+
+def does_grid_exist(model_name,root_dir):
+	if os.path.isfile(root_dir + 'Data/MCMC_' + model_name + '_grid.pkl'):
+		return True
+	return False
+
+def read_grid(model_name,root_dir):
+	pkl_data_file = open(root_dir + 'Data/MCMC_' + model_name + '_grid.pkl','rb')
+	resolution, likelihoods, parameters, theta_max = pick.load(pkl_data_file)
+	pkl_data_file.close()
+	return resolution, likelihoods, parameters, theta_max
 
 def read_data_names():
 	mathew = np.genfromtxt('Mathew/Smith_2012_Figure5_Results.txt')
@@ -86,7 +110,7 @@ def ks_test(ssfr,snr,snr_func,theta,visualise=False,model_name='test',plot_color
 	snr_model = snr_func(ssfr,theta)
 	ks_data = np.cumsum(snr) / np.sum(snr)
 	ks_model = np.cumsum(snr_model) / np.sum(snr_model)
-
+	
 	ks_result = np.abs(np.max(ks_data - ks_model))
 
 	if visualise:

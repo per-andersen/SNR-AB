@@ -46,11 +46,9 @@ if __name__ == '__main__':
 	root_dir = '/Users/perandersen/Data/SNR-AB/'
 	model_name = 'split'
 	
-	if os.path.isfile(root_dir + 'Data/MCMC_split.pkl'):
+	if util.do_chains_exist(model_name,root_dir):
 		print 'Chains already exist, using existing chains...'
-		pkl_data_file = open(root_dir + 'Data/MCMC_split.pkl','rb')
-		samples = pick.load(pkl_data_file)
-		pkl_data_file.close()
+		samples = util.read_chains(model_name,root_dir)
 		print np.shape(samples)
 	else:
 		print 'Chains do not exist, computing chains...'
