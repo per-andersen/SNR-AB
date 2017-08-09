@@ -1,5 +1,0 @@
-# Mannucci et al 2005 [logs(SFR) vs SN/yr/Msun + errorbar, E/S0, S0a/b, Sbc/d, Irr]
--11.90  4.4e-14  1.6e-14  1.4e-14
--10.45  6.5e-14  2.7e-14  2.5e-14
- -9.60  17.e-14  6.8e-14  6.3e-14
- -8.60  77.e-14  42.e-14  31.e-14
