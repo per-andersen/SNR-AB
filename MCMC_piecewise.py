@@ -8,28 +8,24 @@ import scipy.optimize as opt
 import pickle as pick
 import time
 
-def new_contin_snr(ssfr,theta):
-	k1, k2, ssfr1, ssfr2 = theta
+def piecewise_snr(ssfr,theta):
+	slope, offset, x1, x2 = theta
 
 	snr_return = np.zeros(len(ssfr))
-	
 	for ii in np.arange(len(ssfr)):
+		if ssfr[ii] < x1:
+			snr_return[ii] = x1**(slope) * offset
 		
-		if ssfr1 < ssfr[ii]:
-			snr_return[ii] = ssfr1 * (k1 / ssfr1 + k2*np.log(ssfr1 / ssfr2))
-		
-		elif ssfr[ii] < ssfr2:
-			snr_return[ii] = ssfr2 * (k1 / ssfr1 + k2*np.log(ssfr1 / ssfr2))
+		elif ssfr[ii] > x2:
+			snr_return[ii] = x2**(slope) * offset
 		
 		else:
-			snr_return[ii] = ssfr[ii] * (k1 / ssfr1 + k2*np.log(ssfr1 / ssfr2))
+			snr_return[ii] = ssfr[ii]**(slope) * offset
 
 	return snr_return
 
 def lnlike(theta, ssfr, snr, snr_err):
-	k1, k2, ssfr1, ssfr2 = theta
-
-	snr_model = new_contin_snr(ssfr, theta)
+	snr_model = piecewise_snr(ssfr, theta)
 	return -0.5*(np.sum( ((snr-snr_model)/snr_err)**2.  ))
 
 def run_emcee():
@@ -43,37 +39,20 @@ def run_emcee():
 		print 'Chains do not exist, computing chains...'
 
 		# Setting parameter top hat priors
-		#4.628e-13, 6.105e-11, 2.885e-10, 1.008e-11, 6.100e-4
-		#k1_min, k1_max = 1e-14, 5e-11
-		#k2_min, k2_max = 1e-13, 1e-9
-		#ssfr1_min, ssfr1_max = 1e-11, 1e-7
-		#ssfr2_min, ssfr2_max = 1e-13, 1e-9
-		#ssfra_min, ssfra_max = 1e-7, 1e-1
-
-		# These priors force the chain to only check this local extrema
 		k1_min, k1_max = 1e-13, 9e-13
 		k2_min, k2_max = 1e-5, 7e-4
-		ssfr1_min, ssfr1_max = 1e-10, 8e-10
-		ssfr2_min, ssfr2_max = 1e-11, 8e-11
-		ssfra_min, ssfra_max = 2e-11, 9e-10
+		x1_min, x1_max = 1e-10, 8e-10
+		x2_min, x2_max = 1e-11, 8e-11
 
-		ndim = 5	
+		ndim = 4	
 		nwalkers = 300
 		nburn = 20
 		nsample = 150
 
 		# These functions define the prior and the function to apply prior to likelihood
 		def lnprior(theta):
-			k1, k2, ssfr1, ssfr2, ssfra = theta
-			
-			if (k1_min < k1 < k1_max) and (k2_min < k2 < k2_max) and (ssfr1_min < ssfr1 < ssfr1_max) and (ssfr2_min < ssfr2 < ssfr2_max) and (ssfra_min < ssfra < ssfra_max):
-				
-				slope_term = k1 / ssfr1 + k2*np.log(ssfr1 / ssfr2)
-				if not np.isclose(k1,ssfr1*slope_term):
-					return -np.inf
-				if not np.isclose(k2*ssfra,ssfr2*slope_term):
-					return -np.inf
-
+			k1, k2, x1, x2 = theta
+			if (k1_min < k1 < k1_max) and (k2_min < k2 < k2_max) and (x1_min < x1 < x1_max) and (x2_min < x2 < x2_max):
 				return 0.
 			return -np.inf
 
@@ -87,8 +66,8 @@ def run_emcee():
 		ssfr, snr, snr_err = util.read_data()
 
 		# Setting initial position of walkers
-		pos_min = np.array([k1_min, k2_min, ssfr1_min, ssfr2_min, ssfra_min])
-		pos_max = np.array([k1_max, k2_max, ssfr1_max, ssfr2_max, ssfra_max])
+		pos_min = np.array([k1_min, k2_min, x1_min, x2_min])
+		pos_max = np.array([k1_max, k2_max, x1_max, x2_max])
 		psize = pos_max - pos_min
 
 		psize = pos_max - pos_min
@@ -122,13 +101,6 @@ def run_emcee():
 
 		plt.figure()
 		ax = plt.subplot()
-		ax.set_yscale("log")
-		#ax.set_xscale("log")
-		plt.plot(sampler.chain[:,:,4].T,'b',alpha=0.05)
-		plt.xlabel('par4')
-
-		plt.figure()
-		ax = plt.subplot()
 		#ax.set_yscale("log")
 		#ax.set_xscale("log")
 		plt.plot(sampler.lnprobability[:,:].T,'b',alpha=0.05)
@@ -136,7 +108,7 @@ def run_emcee():
 
 		# Formatting and saving output
 		samples = sampler.flatchain
-		output = open(root_dir + 'Data/MCMC_abnew.pkl','wb')
+		output = open(root_dir + 'Data/MCMC_piecewise.pkl','wb')
  		pick.dump(samples,output)
  		output.close()
 		print np.shape(samples)
@@ -157,19 +129,13 @@ def run_emcee():
 	ax = plt.subplot()
 	ax.set_xscale("log")
 	plt.hist(samples[:,2],bins=100)
-	plt.xlabel('ssfr1')
+	plt.xlabel('x1')
 
 	plt.figure()
 	ax = plt.subplot()
 	ax.set_xscale("log")
 	plt.hist(samples[:,3],bins=100)
-	plt.xlabel('ssfr2')
-
-	plt.figure()
-	ax = plt.subplot()
-	ax.set_xscale("log")
-	plt.hist(samples[:,4],bins=100)
-	plt.xlabel('ssfra')
+	plt.xlabel('x2')
 
 	c = ChainConsumer()
 	c.add_chain(samples, parameters=["$k_1$", "$k_2$", "$sSFR_1$", "$sSFR_2$", "$sSFR_a$"])
@@ -184,38 +150,36 @@ def run_emcee():
 	ssfr2_fit = summary["$sSFR_2$"][1]
 	ssfra_fit = summary["$sSFR_a$"][1]
 
-	theta_pass = k1_fit, k2_fit, ssfr1_fit, ssfr2_fit, ssfra_fit
+	theta_pass = k1_fit, k2_fit, x1_fit, x2_fit
 	
 	print 'k1', k1_fit
 	print 'k2', k2_fit
-	print 'ssfr1', ssfr1_fit
-	print 'ssfr2', ssfr2_fit
-	print 'ssfra', ssfra_fit
+	print 'x1', x1_fit
+	print 'x2', x2_fit
 	return theta_pass
 
 def run_grid():
 	if util.does_grid_exist(model_name,root_dir):
 		print 'Grid already exists, using existing grid...'
 		resolution, likelihoods, parameters, theta_max = util.read_grid(model_name,root_dir)
-		k1_par, k2_par, s1_par, s2_par = parameters
+		k1_par, k2_par, x1_par, x2_par = parameters
 	else:
 		print 'Grid does not exist, computing grid...'
 	
 		resolution = 100
 
-		#theta_pass = 4.628e-13, 2e-4, 1./(0.5e9), 1.008e-11, 2./(12e9)
-		k1_min, k1_max = 3e-13, 6e-13
-		k2_min, k2_max = 3e-5, 4e-4
-		ssfr1_min, ssfr1_max = 2e-10, 6e-10
-		ssfr2_min, ssfr2_max = 1.5e-11, 5.8e-11
+		k1_min, k1_max = 0.4, 0.8
+		k2_min, k2_max = 0.1e-8, 90e-8
+		x1_min, x1_max = 0.1e-11, 4e-11
+		x2_min, x2_max = 0.1e-9, 3e-9
 
 		# Reading in data
 		ssfr, snr, snr_err = util.read_data()
 
 		k1_par = np.linspace(k1_min,k1_max,resolution)
 		k2_par = np.linspace(k2_min,k2_max,resolution)
-		s1_par = np.linspace(ssfr1_min,ssfr1_max,resolution)
-		s2_par = np.linspace(ssfr2_min,ssfr2_max,resolution)
+		x1_par = np.linspace(x1_min,x1_max,resolution)
+		x2_par = np.linspace(x2_min,x2_max,resolution)
 
 		likelihoods = np.ones((resolution,resolution,resolution,resolution))
 		max_like = 0.
@@ -226,64 +190,63 @@ def run_grid():
 			for jj in np.arange(resolution):
 				for kk in np.arange(resolution):
 					for ll in np.arange(resolution):
-						theta = k1_par[ii], k2_par[jj], s1_par[kk], s2_par[ll]
+						theta = k1_par[ii], k2_par[jj], x1_par[kk], x2_par[ll]
 						likelihoods[ii,jj,kk,ll] = np.exp(lnlike(theta,ssfr,snr,snr_err))
 						if likelihoods[ii,jj,kk,ll] > max_like:
 							max_like = likelihoods[ii,jj,kk,ll]
-							theta_max = k1_par[ii], k2_par[jj], s1_par[kk], s2_par[ll]
+							theta_max = k1_par[ii], k2_par[jj], x1_par[kk], x2_par[ll]
 							#print "New max like:", max_like
 							#print theta_max, "\n"
 		likelihoods /= np.sum(likelihoods)
-		output = open(root_dir + 'Data/MCMC_abnewcontin_grid.pkl','wb')
-		parameters = k1_par, k2_par, s1_par, s2_par
+		output = open(root_dir + 'Data/MCMC_piecewise_grid.pkl','wb')
+		parameters = k1_par, k2_par, x1_par, x2_par
 		result = resolution, likelihoods, parameters, theta_max
  		pick.dump(result,output)
  		output.close()
 
 	k1_like = np.zeros(resolution)
 	k2_like = np.zeros(resolution)
-	s1_like = np.zeros(resolution)
-	s2_like = np.zeros(resolution)
+	x1_like = np.zeros(resolution)
+	x2_like = np.zeros(resolution)
 	for ii in np.arange(resolution):
-		k1_like[ii] = np.sum(likelihoods[ii,:,:,:])
-		k2_like[ii] = np.sum(likelihoods[:,ii,:,:])
-		s1_like[ii] = np.sum(likelihoods[:,:,ii,:])
-		s2_like[ii] = np.sum(likelihoods[:,:,:,ii])
+		k1_like[ii]    = np.sum(likelihoods[ii,:,:,:])
+		k2_like[ii]    = np.sum(likelihoods[:,ii,:,:])
+		x1_like[ii]    = np.sum(likelihoods[:,:,ii,:])
+		x2_like[ii]    = np.sum(likelihoods[:,:,:,ii])
 	
 	
 	plt.figure()
 	ax = plt.subplot()
 	ax.set_xscale("log")
 	plt.plot(k1_par,k1_like,'x')
-	plt.xlabel('k1')
+	plt.xlabel('slope')
 
 	plt.figure()
 	ax = plt.subplot()
 	ax.set_xscale("log")
 	plt.plot(k2_par,k2_like,'x')
-	plt.xlabel('k2')
+	plt.xlabel('offset')
 
 	plt.figure()
 	ax = plt.subplot()
 	ax.set_xscale("log")
-	plt.plot(s1_par,s1_like,'x')
-	plt.xlabel('ssfr1')
+	plt.plot(x1_par,x1_like,'x')
+	plt.xlabel('x1')
 
 	plt.figure()
 	ax = plt.subplot()
 	ax.set_xscale("log")
-	plt.plot(s2_par,s2_like,'x')
-	plt.xlabel('ssfr2')
-	
+	plt.plot(x2_par,x2_like,'x')
+	plt.xlabel('x2')
 
 	# These are the marginalised maximum likelihood parameters
 	k1_fit = k1_par[np.argmax(k1_like)]
 	k2_fit = k2_par[np.argmax(k2_like)]
-	s1_fit = s1_par[np.argmax(s1_like)]
-	s2_fit = s2_par[np.argmax(s2_like)]
+	x1_fit = x1_par[np.argmax(x1_like)]
+	x2_fit = x2_par[np.argmax(x2_like)]
 
 	print "ML parameters:"
-	#theta_pass = k1_fit, k2_fit, s1_fit, s2_fit
+	#theta_pass = k1_fit, k2_fit, x1_fit, x2_fit
 	theta_pass = theta_max
 	print theta_pass
 	return theta_pass
@@ -292,27 +255,27 @@ if __name__ == '__main__':
 	t0 = time.time()
 
 	root_dir = '/Users/perandersen/Data/SNR-AB/'
-	model_name = 'abnewcontin'
+	model_name = 'piecewise'
 
 	#theta_pass = run_emcee()
 	theta_pass = run_grid()
-
+	#theta_pass = 0.53, 3.1e-8, 1e-11, 2e-9
 
 	ssfr, snr, snr_err = util.read_data()
-	chi2 = np.sum( ((snr-new_contin_snr(ssfr, theta_pass))/snr_err)**2.  )
-	bic = chi2 + 5.*np.log(len(ssfr))
-	aic = chi2 + 5.*2.
-	ks_test = util.ks_test(ssfr,snr,new_contin_snr,theta_pass)
+	chi2 = np.sum( ((snr-piecewise_snr(ssfr, theta_pass))/snr_err)**2.  )
+	bic = chi2 + 4.*np.log(len(ssfr))
+	aic = chi2 + 4.*2.
+	ks_test = util.ks_test(ssfr,snr,piecewise_snr,theta_pass)
 
 	print "Done in", time.time() - t0, "seconds"
 	print ""
 	print "BIC", bic
 	print "AIC", aic
 	print "chi2", chi2
-	print "r.chi2", chi2 / (len(ssfr)-5.)
+	print "r.chi2", chi2 / (len(ssfr)-4.)
 	print "KS", ks_test
 	
-	util.plot_data_log(root_dir,model_name,theta_pass,new_contin_snr)
+	util.plot_data_log(root_dir,model_name,theta_pass,piecewise_snr)
 
 	plt.show()
 
