@@ -40,12 +40,7 @@ def lnprob(theta, ssfr, snr, snr_err):
 		return -np.inf
 	return lp + lnlike(theta, ssfr, snr, snr_err)
 
-if __name__ == '__main__':
-	t0 = time.time()
-
-	root_dir = '/Users/perandersen/Data/SNR-AB/'
-	model_name = 'split'
-	
+def run_emcee():
 	if util.do_chains_exist(model_name,root_dir):
 		print 'Chains already exist, using existing chains...'
 		samples = util.read_chains(model_name,root_dir)
@@ -101,14 +96,24 @@ if __name__ == '__main__':
 	print 'k', c_fit
 	print 'sSFR_0', d_fit
 	
-
-	logssfr, ssfr, snr, snr_err = util.read_data_with_log()
 	theta_pass = a_fit, c_fit, d_fit
+	return theta_pass
+
+if __name__ == '__main__':
+	t0 = time.time()
+
+	root_dir = '/Users/perandersen/Data/SNR-AB/'
+	model_name = 'split'
+	
+	logssfr, ssfr, snr, snr_err = util.read_data_with_log()
+
+	theta_pass = run_emcee()
 	#theta_pass = 4.2e-14, 0.272, 3.8e-11
+
 	chi2 = np.sum( ((snr-split_snr(logssfr, theta_pass))/snr_err)**2.  )
 	bic = chi2 + 3.*np.log(len(logssfr))
 	aic = chi2 + 3.*2.
-	ks_test = util.ks_test(np.log10(ssfr),snr,split_snr,theta_pass,visualise=True)
+	ks_test = util.ks_test(np.log10(ssfr),snr,split_snr,theta_pass,visualise=False)
 
 	print "Done in", time.time() - t0, "seconds"
 	print ""
