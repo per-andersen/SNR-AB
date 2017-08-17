@@ -15,9 +15,9 @@ def nicelog_snr(logssfr,theta):
 	return a + a * np.log(ssfr/ssfr0 + alpha) / k
 
 def lnprior(theta):
-	a, c, d, alpha = theta
+	a, k, ssfr0, alpha = theta
 	#theta_pass = 4.2e-14, 0.272, 3.8e-11
-	if (0.05e-14 < a < 120e-14) and (0.001 < c < 5.5) and (0.1e-11 < d < 1000e-11) and (0.01 < alpha < 1.6):
+	if (0.05e-14 < a < 120e-14) and (0.001 < k < 5.5) and (0.1e-11 < ssfr0 < 1000e-11) and (0.01 < alpha < 1.6):
 		return 0.
 	return -np.inf
 
@@ -98,24 +98,24 @@ def run_grid():
 	if util.does_grid_exist(model_name,root_dir):
 		print 'Grid already exists, using existing grid...'
 		resolution, likelihoods, parameters, theta_max = util.read_grid(model_name,root_dir)
-		k1_par, k2_par, x1_par, x2_par = parameters
+		a_par, k_par, s0_par, alpha_par = parameters
 	else:
 		print 'Grid does not exist, computing grid...'
 	
 		resolution = 100
 		#theta_pass = 4.2e-14, 0.272, 3.8e-11, 0.9
-		k1_min, k1_max = 2e-14, 13e-14
-		k2_min, k2_max = 0.05, 2
-		x1_min, x1_max = 1e-11, 20e-11
-		x2_min, x2_max = 0.55, 1.4
+		a_min, a_max = 2e-14, 13e-14
+		k_min, k_max = 0.05, 2
+		s0_min, s0_max = 1e-11, 20e-11
+		alpha_min, alpha_max = 0.55, 1.4
 
 		# Reading in data
 		ssfr, snr, snr_err = util.read_data()
 
-		k1_par = np.linspace(k1_min,k1_max,resolution)
-		k2_par = np.linspace(k2_min,k2_max,resolution)
-		x1_par = np.linspace(x1_min,x1_max,resolution)
-		x2_par = np.linspace(x2_min,x2_max,resolution)
+		a_par = np.linspace(a_min,a_max,resolution)
+		k_par = np.linspace(k_min,k_max,resolution)
+		s0_par = np.linspace(s0_min,s_max,resolution)
+		alpha_par = np.linspace(alpha_min,alpha_max,resolution)
 
 		likelihoods = np.ones((resolution,resolution,resolution,resolution))
 		max_like = 0.
@@ -130,68 +130,69 @@ def run_grid():
 						likelihoods[ii,jj,kk,ll] = np.exp(lnlike(theta,ssfr,snr,snr_err))
 						if likelihoods[ii,jj,kk,ll] > max_like:
 							max_like = likelihoods[ii,jj,kk,ll]
-							theta_max = k1_par[ii], k2_par[jj], x1_par[kk], x2_par[ll]
+							theta_max = a_par[ii], k_par[jj], s0_par[kk], alpha_par[ll]
 							#print "New max like:", max_like
 							#print theta_max, "\n"
 		likelihoods /= np.sum(likelihoods)
 		output = open(root_dir + 'Data/MCMC_nicelog_grid.pkl','wb')
-		parameters = k1_par, k2_par, x1_par, x2_par
+		parameters = a_par, k_par, s0_par, alpha_par
 		result = resolution, likelihoods, parameters, theta_max
  		pick.dump(result,output)
  		output.close()
 
-	k1_like = np.zeros(resolution)
-	k2_like = np.zeros(resolution)
-	x1_like = np.zeros(resolution)
-	x2_like = np.zeros(resolution)
+	a_like = np.zeros(resolution)
+	k_like = np.zeros(resolution)
+	s0_like = np.zeros(resolution)
+	alpha_like = np.zeros(resolution)
 	for ii in np.arange(resolution):
-		k1_like[ii]    = np.sum(likelihoods[ii,:,:,:])
-		k2_like[ii]    = np.sum(likelihoods[:,ii,:,:])
-		x1_like[ii]    = np.sum(likelihoods[:,:,ii,:])
-		x2_like[ii]    = np.sum(likelihoods[:,:,:,ii])
+		a_like[ii]    = np.sum(likelihoods[ii,:,:,:])
+		k_like[ii]    = np.sum(likelihoods[:,ii,:,:])
+		s0_like[ii]    = np.sum(likelihoods[:,:,ii,:])
+		alpha_like[ii]    = np.sum(likelihoods[:,:,:,ii])
 	
 	
 	plt.figure()
 	ax = plt.subplot()
 	ax.set_xscale("log")
-	plt.plot(k1_par,k1_like,'x')
+	plt.plot(a_par,a_like,'x')
 	plt.xlabel('a')
 
 	plt.figure()
 	ax = plt.subplot()
 	ax.set_xscale("log")
-	plt.plot(k2_par,k2_like,'x')
+	plt.plot(k_par,k_like,'x')
 	plt.xlabel('k')
 
 	plt.figure()
 	ax = plt.subplot()
 	ax.set_xscale("log")
-	plt.plot(x1_par,x1_like,'x')
+	plt.plot(s0_par,s0_like,'x')
 	plt.xlabel('ssfr0')
 
 	plt.figure()
 	ax = plt.subplot()
 	ax.set_xscale("log")
-	plt.plot(x2_par,x2_like,'x')
+	plt.plot(alpha_par,alpha_like,'x')
 	plt.xlabel('alpha')
 
 	# These are the marginalised maximum likelihood parameters
-	k1_fit = k1_par[np.argmax(k1_like)]
-	k2_fit = k2_par[np.argmax(k2_like)]
-	x1_fit = x1_par[np.argmax(x1_like)]
-	x2_fit = x2_par[np.argmax(x2_like)]
+	a_fit = a_par[np.argmax(a_like)]
+	k_fit = k_par[np.argmax(k_like)]
+	s0_fit = s0_par[np.argmax(s0_like)]
+	alpha_fit = alpha_par[np.argmax(alpha_like)]
 
 	print "ML parameters:"
-	#theta_pass = k1_fit, k2_fit, x1_fit, x2_fit
+	#theta_pass = a_fit, k_fit, s0_fit, alpha_fit
 	theta_pass = theta_max
 	print theta_pass
 	return theta_pass
 
+root_dir = '/Users/perandersen/Data/SNR-AB/'
+model_name = 'nicelog'
+
 if __name__ == '__main__':
 	t0 = time.time()
 
-	root_dir = '/Users/perandersen/Data/SNR-AB/'
-	model_name = 'nicelog'
 	
 	logssfr, ssfr, snr, snr_err = util.read_data_with_log()
 
@@ -200,8 +201,8 @@ if __name__ == '__main__':
 	#theta_pass = 4.2e-14, 0.272, 3.8e-11, 0.9
 
 	chi2 = np.sum( ((snr-nicelog_snr(logssfr, theta_pass))/snr_err)**2.  )
-	bic = chi2 + 3.*np.log(len(logssfr))
-	aic = chi2 + 3.*2.
+	bic = chi2 + 4.*np.log(len(logssfr))
+	aic = chi2 + 4.*2.
 	ks_test = util.ks_test(np.log10(ssfr),snr,nicelog_snr,theta_pass,visualise=False)
 
 	print "Done in", time.time() - t0, "seconds"
@@ -209,7 +210,7 @@ if __name__ == '__main__':
 	print "BIC", bic
 	print "AIC", aic
 	print "chi2", chi2
-	print "r.chi2", chi2 / (len(logssfr)-3.)
+	print "r.chi2", chi2 / (len(logssfr)-4.)
 	print "KS", ks_test
 
 	util.plot_data(root_dir, model_name, theta_pass, nicelog_snr)

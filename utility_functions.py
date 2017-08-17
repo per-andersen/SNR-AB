@@ -100,6 +100,40 @@ def plot_data(root_dir, model_name, theta, snr_func):
 
 	plt.savefig(root_dir + 'Plots/model_' + model_name + '.pdf')
 
+def plot_combined(root_dir, model_names, thetas, snr_funcs, logornot):
+	logssfr_sul, snr_sul, snr_err_sul, logssfr_mat, snr_mat, snr_err_mat = read_data_names()
+
+	n_plots = len(model_names)
+	snr = np.zeros((n_plots,10000))
+	for ii in np.arange(n_plots):
+		if logornot[ii] == True:
+			ssfr_values = np.logspace(-13,-8,10000)
+			snr_func = snr_funcs[ii]
+			snr[ii,:] = snr_func(ssfr_values, thetas[ii])
+		else:
+			logssfr_values = np.linspace(-13,-8,10000)
+			snr_func = snr_funcs[ii]
+			snr[ii,:] = snr_func(logssfr_values, thetas[ii])
+
+	logssfr_values = np.linspace(-13,-8,10000)
+
+	plt.figure()
+	ax = plt.subplot()
+	plt.xlabel('log(sSFR)',size='large')
+	plt.ylabel('sSNR',size='large')
+	plt.xlim((-13,-8))
+	plt.ylim((2e-14,1e-12))
+	ax.set_yscale("log")
+	plt.errorbar(logssfr_sul,snr_sul,yerr=snr_err_sul,fmt='o',label='Sullivan et al. (2006)')
+	plt.errorbar(logssfr_mat,snr_mat,yerr=snr_err_mat,fmt='x',label='Smith et al. (2012)')
+
+	for ii in np.arange(n_plots):
+		plt.plot(logssfr_values, snr[ii],c='k',lw=3,label=model_names[ii])
+	
+
+	#plt.legend(frameon=False, loc=2, fontsize=16)
+
+
 def ks_test(ssfr,snr,snr_func,theta,visualise=False,model_name='test',plot_color='r'):
 
 	## First we make sure everything is sorted
