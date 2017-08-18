@@ -131,7 +131,7 @@ def plot_combined(root_dir, model_names, thetas, snr_funcs, logornot):
 		plt.plot(logssfr_values, snr[ii],c='k',lw=3,label=model_names[ii])
 	
 
-	#plt.legend(frameon=False, loc=2, fontsize=16)
+	plt.legend(frameon=False, loc=2, fontsize=16)
 
 
 def ks_test(ssfr,snr,snr_func,theta,visualise=False,model_name='test',plot_color='r'):

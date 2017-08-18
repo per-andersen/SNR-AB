@@ -77,12 +77,7 @@ def run_grid():
 
 	plt.show()
 
-if __name__ == '__main__':
-	t0 = time.time()
-	
-	root_dir = '/Users/perandersen/Data/SNR-AB/'
-	model_name = 'simple'
-	
+def run_emcee():
 	if util.do_chains_exist(model_name,root_dir):
 		print 'Chains already exist, using existing chains...'
 		samples = util.read_chains(model_name,root_dir)
@@ -133,10 +128,18 @@ if __name__ == '__main__':
 	
 	print 'A', a_fit
 	print 'B', c_fit
+
+	return theta_pass
+	
+root_dir = '/Users/perandersen/Data/SNR-AB/'
+model_name = 'simple'
+
+if __name__ == '__main__':
+	t0 = time.time()
 	
 	logssfr, ssfr, snr, snr_err = util.read_data_with_log()
 	
-	theta_pass = a_fit, c_fit
+	theta_pass = run_emcee()
 	chi2 = np.sum( ((snr-simple_snr(logssfr, theta_pass))/snr_err)**2.  )
 	bic = chi2 + 2.*np.log(len(logssfr))
 	aic = chi2 + 2.*2.
