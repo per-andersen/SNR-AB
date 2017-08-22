@@ -151,6 +151,7 @@ def run_grid():
 		alpha_like[ii]    = np.sum(likelihoods[:,:,:,ii])
 	
 	
+	'''
 	plt.figure()
 	ax = plt.subplot()
 	ax.set_xscale("log")
@@ -174,7 +175,8 @@ def run_grid():
 	ax.set_xscale("log")
 	plt.plot(alpha_par,alpha_like,'x')
 	plt.xlabel('alpha')
-
+	'''
+	
 	# These are the marginalised maximum likelihood parameters
 	a_fit = a_par[np.argmax(a_like)]
 	k_fit = k_par[np.argmax(k_like)]

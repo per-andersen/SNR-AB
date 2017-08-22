@@ -62,43 +62,49 @@ def read_data_with_log():
 
 	return logssfr, ssfr, snr, snr_err
 
-def plot_data_log(root_dir, model_name, theta, snr_func):
+def plot_data_log(root_dir, model_name, theta, snr_func,combined_plot=False):
 	logssfr_sul, snr_sul, snr_err_sul, logssfr_mat, snr_mat, snr_err_mat = read_data_names()
 
 	ssfr_values = np.logspace(-13,-8,10000)
 	snr_values = snr_func(ssfr_values, theta)
-	plt.figure()
-	ax = plt.subplot()
-	plt.xlabel('log(sSFR)',size='large')
-	plt.ylabel('sSNR',size='large')
+	if combined_plot == False:
+		plt.figure()
+		ax = plt.subplot()
+		plt.xlabel('log(sSFR)',size='large')
+		plt.ylabel('sSNR',size='large')
+		ax.set_yscale("log")
 	plt.xlim((-13,-8))
 	plt.ylim((2e-14,1e-12))
-	ax.set_yscale("log")
 	plt.plot(np.log10(ssfr_values), snr_values,c='k',lw=3)
 	plt.errorbar(logssfr_sul,snr_sul,yerr=snr_err_sul,fmt='o',label='Sullivan et al. (2006)')
 	plt.errorbar(logssfr_mat,snr_mat,yerr=snr_err_mat,fmt='x',label='Smith et al. (2012)')
-	plt.legend(frameon=False, loc=2, fontsize=16)
+	if combined_plot == False:	
+		plt.legend(frameon=False, loc=2, fontsize=16)
+		plt.savefig(root_dir + 'Plots/model_' + model_name + '.pdf')
 
-	plt.savefig(root_dir + 'Plots/model_' + model_name + '.pdf')
+	
 
-def plot_data(root_dir, model_name, theta, snr_func):
+def plot_data(root_dir, model_name, theta, snr_func,combined_plot=False):
 	logssfr_sul, snr_sul, snr_err_sul, logssfr_mat, snr_mat, snr_err_mat = read_data_names()
 
 	logssfr_values = np.linspace(-13,-8,100000)
 	snr_values = snr_func(logssfr_values, theta)
-	plt.figure()
-	ax = plt.subplot()
-	plt.xlabel('log(sSFR)',size='large')
-	plt.ylabel('sSNR',size='large')
+	if combined_plot == False:
+		plt.figure()
+		ax = plt.subplot()
+		plt.xlabel('log(sSFR)',size='large')
+		plt.ylabel('sSNR',size='large')
+		ax.set_yscale("log")
 	plt.xlim((-13,-8))
 	plt.ylim((2e-14,1e-12))
-	ax.set_yscale("log")
 	plt.plot(logssfr_values, snr_values,c='k',lw=3)
 	plt.errorbar(logssfr_sul,snr_sul,yerr=snr_err_sul,fmt='o',label='Sullivan et al. (2006)')
 	plt.errorbar(logssfr_mat,snr_mat,yerr=snr_err_mat,fmt='x',label='Smith et al. (2012)')
-	plt.legend(frameon=False, loc=2, fontsize=17)
+	if combined_plot == False:
+		plt.legend(frameon=False, loc=2, fontsize=17)
+		plt.savefig(root_dir + 'Plots/model_' + model_name + '.pdf')
 
-	plt.savefig(root_dir + 'Plots/model_' + model_name + '.pdf')
+	
 
 def plot_combined(root_dir, model_names, thetas, snr_funcs, logornot):
 	logssfr_sul, snr_sul, snr_err_sul, logssfr_mat, snr_mat, snr_err_mat = read_data_names()
@@ -132,7 +138,6 @@ def plot_combined(root_dir, model_names, thetas, snr_funcs, logornot):
 	
 
 	plt.legend(frameon=False, loc=2, fontsize=16)
-
 
 def ks_test(ssfr,snr,snr_func,theta,visualise=False,model_name='test',plot_color='r'):
 

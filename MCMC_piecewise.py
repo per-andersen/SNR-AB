@@ -214,7 +214,7 @@ def run_grid():
 		x1_like[ii]    = np.sum(likelihoods[:,:,ii,:])
 		x2_like[ii]    = np.sum(likelihoods[:,:,:,ii])
 	
-	
+	'''
 	plt.figure()
 	ax = plt.subplot()
 	ax.set_xscale("log")
@@ -238,7 +238,8 @@ def run_grid():
 	ax.set_xscale("log")
 	plt.plot(x2_par,x2_like,'x')
 	plt.xlabel('x2')
-
+	'''
+	
 	# These are the marginalised maximum likelihood parameters
 	k1_fit = k1_par[np.argmax(k1_like)]
 	k2_fit = k2_par[np.argmax(k2_like)]
@@ -251,11 +252,11 @@ def run_grid():
 	print theta_pass
 	return theta_pass
 
+root_dir = '/Users/perandersen/Data/SNR-AB/'
+model_name = 'piecewise'
+
 if __name__ == '__main__':
 	t0 = time.time()
-
-	root_dir = '/Users/perandersen/Data/SNR-AB/'
-	model_name = 'piecewise'
 
 	#theta_pass = run_emcee()
 	theta_pass = run_grid()
