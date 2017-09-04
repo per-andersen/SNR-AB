@@ -117,8 +117,8 @@ def run_emcee():
 	c = ChainConsumer()
 	c.add_chain(samples, parameters=["$A$", "$B$"])
 	#figw = c.plotter.plot_walks()
-	fig = c.plotter.plot(figsize=(8,6))
-	fig.savefig(root_dir + 'Plots/marginals_simple.pdf')
+	#fig = c.plotter.plot(figsize=(8,6))
+	#fig.savefig(root_dir + 'Plots/marginals_simple.pdf')
 	summary =  c.analysis.get_summary()
 
 	a_fit = summary["$A$"][1]
@@ -143,7 +143,7 @@ if __name__ == '__main__':
 	chi2 = np.sum( ((snr-simple_snr(logssfr, theta_pass))/snr_err)**2.  )
 	bic = chi2 + 2.*np.log(len(logssfr))
 	aic = chi2 + 2.*2.
-	ks_test = util.ks_test(np.log10(ssfr),snr,simple_snr,theta_pass,visualise=False)
+	ks_test = util.ks_test(np.log10(ssfr),snr,simple_snr,theta_pass,visualise=True)
 
 	print "Done in", time.time() - t0, "seconds"
 	print ""

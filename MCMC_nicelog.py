@@ -104,6 +104,11 @@ def run_grid():
 	
 		resolution = 100
 		#theta_pass = 4.2e-14, 0.272, 3.8e-11, 0.9
+		#a_min, a_max = 2e-14, 20e-14
+		#k_min, k_max = 0.05, 1.3
+		#s0_min, s0_max = 1e-11, 40e-11
+		#alpha_min, alpha_max = 0.35, 1.4
+
 		a_min, a_max = 2e-14, 13e-14
 		k_min, k_max = 0.05, 2
 		s0_min, s0_max = 1e-11, 20e-11
@@ -114,7 +119,7 @@ def run_grid():
 
 		a_par = np.linspace(a_min,a_max,resolution)
 		k_par = np.linspace(k_min,k_max,resolution)
-		s0_par = np.linspace(s0_min,s_max,resolution)
+		s0_par = np.linspace(s0_min,s0_max,resolution)
 		alpha_par = np.linspace(alpha_min,alpha_max,resolution)
 
 		likelihoods = np.ones((resolution,resolution,resolution,resolution))
@@ -126,7 +131,7 @@ def run_grid():
 			for jj in np.arange(resolution):
 				for kk in np.arange(resolution):
 					for ll in np.arange(resolution):
-						theta = k1_par[ii], k2_par[jj], x1_par[kk], x2_par[ll]
+						theta = a_par[ii], k_par[jj], s0_par[kk], alpha_par[ll]
 						likelihoods[ii,jj,kk,ll] = np.exp(lnlike(theta,ssfr,snr,snr_err))
 						if likelihoods[ii,jj,kk,ll] > max_like:
 							max_like = likelihoods[ii,jj,kk,ll]
@@ -150,7 +155,15 @@ def run_grid():
 		s0_like[ii]    = np.sum(likelihoods[:,:,ii,:])
 		alpha_like[ii]    = np.sum(likelihoods[:,:,:,ii])
 	
-	
+	yes_chainconsumer = False
+	if yes_chainconsumer:
+		print "Defining chainconsumer"
+		c = ChainConsumer()
+		print "Adding chain"
+		c.add_chain([a_par, k_par, s0_par, alpha_par], parameters=["a","k","s0","alpha"],weights=likelihoods,grid=True)
+		print "Doing plot"
+		fig = c.plotter.plot()
+
 	'''
 	plt.figure()
 	ax = plt.subplot()
