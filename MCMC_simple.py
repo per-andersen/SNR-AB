@@ -34,7 +34,7 @@ def lnprob(theta, ssfr, snr, snr_err):
 	return lp + lnlike(theta, ssfr, snr, snr_err)
 
 def run_grid():
-	resolution = 20
+	resolution = 300
 
 	#ML parameters: [  1.20103392 -13.38221532 -10.07802213   2.61730236]
 
@@ -49,11 +49,15 @@ def run_grid():
 	a_par = np.linspace(a_min,a_max,resolution)
 	b_par = np.linspace(b_min,b_max,resolution)
 
+	max_like = 0.
+
 	for ii in np.arange(resolution):
-		print ii
 		for jj in np.arange(resolution):
 			theta = a_par[ii], b_par[jj]
-			likelihoods[ii,jj] = -lnlike(theta,ssfr,snr,snr_err)*2.
+			likelihoods[ii,jj] = np.exp(lnlike(theta,ssfr,snr,snr_err))
+			if likelihoods[ii,jj] > max_like:
+				max_like = likelihoods[ii,jj]
+				theta_max = a_par[ii], b_par[jj]
 	
 	#plt.figure()
 	#plt.xlabel("a")
@@ -66,7 +70,19 @@ def run_grid():
 	for ii in np.arange(resolution):
 		a_like[ii] = np.sum(likelihoods[ii,:])
 		b_like[ii] = np.sum(likelihoods[:,ii])
+
+	yes_chainconsumer = True
+	if yes_chainconsumer:
+		print "Defining chainconsumer"
+		c = ChainConsumer()
+		print "Adding chain"
+		c.add_chain([a_par, b_par], parameters=["A","B"],weights=likelihoods,grid=True)
+		print "Doing plot"
+		fig = c.plotter.plot()
 	
+	a_fit = a_par[np.argmax(a_like)]
+	b_fit = b_par[np.argmax(b_like)]
+
 	plt.figure()
 	plt.plot(a_par,a_like)
 	plt.xlabel('a')
@@ -75,7 +91,8 @@ def run_grid():
 	plt.plot(b_par,b_like)
 	plt.xlabel('b')
 
-	plt.show()
+	theta_pass = a_fit, b_fit
+	return theta_pass
 
 def run_emcee():
 	if util.do_chains_exist(model_name,root_dir):
@@ -117,8 +134,8 @@ def run_emcee():
 	c = ChainConsumer()
 	c.add_chain(samples, parameters=["$A$", "$B$"])
 	#figw = c.plotter.plot_walks()
-	#fig = c.plotter.plot(figsize=(8,6))
-	#fig.savefig(root_dir + 'Plots/marginals_simple.pdf')
+	fig = c.plotter.plot(figsize=(8,6))
+	fig.savefig(root_dir + 'Plots/marginals_simple.pdf')
 	summary =  c.analysis.get_summary()
 
 	a_fit = summary["$A$"][1]
@@ -139,7 +156,8 @@ if __name__ == '__main__':
 	
 	logssfr, ssfr, snr, snr_err = util.read_data_with_log()
 	
-	theta_pass = run_emcee()
+	#theta_pass = run_emcee()
+	theta_pass = run_grid()
 	chi2 = np.sum( ((snr-simple_snr(logssfr, theta_pass))/snr_err)**2.  )
 	bic = chi2 + 2.*np.log(len(logssfr))
 	aic = chi2 + 2.*2.
