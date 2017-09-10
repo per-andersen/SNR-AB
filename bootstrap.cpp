@@ -119,7 +119,6 @@ std::vector<double> run_grid()
 	std::vector<double> s0_par = linspace(s0_min,s0_max,resolution);
 	std::vector<double> alpha_par = linspace(alpha_min,alpha_max,resolution);
 
-
 }
 
 
@@ -135,10 +134,31 @@ int main()
  T = gsl_rng_default;
  r = gsl_rng_alloc (T);
 
+// Setting up data
  std::string ROOT_DIR = "/Users/perandersen/Data/";
  std::vector<std::vector<double> > smith = read_to_2d_vector("Mathew/Smith_2012_Figure5_Results.txt", 6, 4);
  std::vector<std::vector<double> > sullivan = read_to_2d_vector("Mathew/Smith_2012_Figure5_Sullivan_Results.txt", 6, 3);
 
- std::cout << "Value: " << sullivan[5][0] << std::endl;
+ std::vector<double> logssfr;
+ std::vector<double> snr;
+ std::vector<double> snr_err;
+
+ for (int ii=0; ii<smith.size(); ii++)
+ {
+ 	logssfr.push_back(smith[ii][0]);
+ 	snr.push_back(smith[ii][1]);
+ 	snr_err.push_back(pow( pow(smith[ii][2],2) + pow(smith[ii][3],2) ,0.5 ));
+ 	std::cout << "Value: " << logssfr[ii] << std::endl;
+ }
+
+ for (int ii=0; ii<sullivan.size(); ii++)
+ {
+ 	logssfr.push_back(sullivan[ii][0]);
+ 	snr.push_back(sullivan[ii][1]);
+ 	snr_err.push_back(sullivan[ii][2]);
+ 	std::cout << "Value: " << logssfr[ii+smith.size()] << std::endl;
+ }
+
+ //std::cout << "Value: " << sullivan[5][0] << std::endl;
 
 }
