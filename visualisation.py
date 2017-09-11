@@ -8,17 +8,17 @@ import MCMC_abnewcontin as contin
 
 root_dir = '/Users/perandersen/Data/SNR-AB/'
 
-theta_contin = contin.run_grid()
-theta_nice = nice.run_grid()
-theta_piece = piece.run_grid()
-
 #theta_simple = simple.run_emcee()
 #util.plot_combined(root_dir, ['nicelog','simple'], [theta_nice,theta_simple], [nice.nicelog_snr,simple.simple_snr], [False,False])
 #plt.show()
 
-
-thetas = [theta_contin,theta_piece,theta_nice]
 def plot_column_three(thetas,oplot_ab=True):
+	theta_contin = contin.run_grid()
+	theta_nice = nice.run_grid()
+	theta_piece = piece.run_grid()
+
+	thetas = [theta_contin,theta_piece,theta_nice]
+
 	f, (ax1, ax2, ax3) = plt.subplots(3,1,figsize=(5,7))
 
 	if oplot_ab:
@@ -60,6 +60,12 @@ def plot_column_three(thetas,oplot_ab=True):
 
 
 def plot_column_two(thetas,oplot_ab=True):
+	theta_contin = contin.run_grid()
+	theta_nice = nice.run_grid()
+	theta_piece = piece.run_grid()
+
+	thetas = [theta_contin,theta_piece,theta_nice]
+
 	f, (ax1, ax2) = plt.subplots(2,1,figsize=(5,7))
 
 	if oplot_ab:
@@ -90,7 +96,31 @@ def plot_column_two(thetas,oplot_ab=True):
 	plt.subplots_adjust(left=0.16,bottom=0.08,right=0.96,top=0.98,wspace=0., hspace=0.)
 	plt.savefig(root_dir + 'Plots/columnplottwo.pdf',format='pdf')
 
+def plot_bootstrap():
+	parameters = np.genfromtxt(root_dir + 'Bootstrap/bootstrap_parameters_1.txt')
+	
+	par1 = parameters[:,0]
+	par2 = parameters[:,1]
+	par3 = parameters[:,2]
+	par4 = parameters[:,3]
 
-plot_column_two(thetas)
+	plt.figure()
+	plt.hist(par1)
+	plt.title('a')
+
+	plt.figure()
+	plt.hist(par2)
+	plt.title('k')
+
+	plt.figure()
+	plt.hist(par3)
+	plt.title('ssfr0')
+
+	plt.figure()
+	plt.hist(par4)
+	plt.title('alpha')
+
+#plot_column_two(thetas)
+plot_bootstrap()
 
 plt.show()

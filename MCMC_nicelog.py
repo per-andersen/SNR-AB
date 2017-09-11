@@ -208,15 +208,15 @@ def run_grid_fast(ssfr, snr, snr_err):
 	#1.1183673469387756e-13, 0.49081632653061219, 1.6653061224489797e-10, 0.7265306122448979
 
 	# We do the first very quick run
-	resolution_1, resolution_2 = 25, 10
+	resolution_1, resolution_2 = 40, 10
 	second_run_offset = 0.6
 
-	a_min, a_max = 5e-15, 7.e-13
-	k_min, k_max = 0.01, 3.
-	s0_min, s0_max = 1e-11, 15.e-10
-	alpha_min, alpha_max = 0.01, 1.5
+	a_min, a_max = 0.1e-13, 3.5e-13
+	k_min, k_max = 0.1, 1.5
+	s0_min, s0_max = 0.1e-10, 7e-10
+	alpha_min, alpha_max = 0.1, 1.2
 
-	warnings = False
+	warnings = True
 
 	a_par = np.linspace(a_min,a_max,resolution_1)
 	k_par = np.linspace(k_min,k_max,resolution_1)
@@ -235,92 +235,47 @@ def run_grid_fast(ssfr, snr, snr_err):
 
 	i,j,k,l = np.unravel_index(likelihoods.argmax(), likelihoods.shape)
 	theta_max = a_par[i], k_par[j], s0_par[k], alpha_par[l]
+	print theta_max
 
 	if warnings:
 		if i == 0:
 			print "Warning, best fit a is at lower limit!"
-			util.plot_data(root_dir, model_name, theta_max, nicelog_snr)
-			plt.show()
+			#util.plot_data(root_dir, model_name, theta_max, nicelog_snr)
+			#plt.show()
 		if i == (resolution_1-1):
 			print "Warning, best fit a is at upper limit!"
-			util.plot_data(root_dir, model_name, theta_max, nicelog_snr)
-			plt.show()
+			#util.plot_data(root_dir, model_name, theta_max, nicelog_snr)
+			#plt.show()
 
 		if j == 0:
 			print "Warning, best fit k is at lower limit!"
-			util.plot_data(root_dir, model_name, theta_max, nicelog_snr)
-			plt.show()
+			#util.plot_data(root_dir, model_name, theta_max, nicelog_snr)
+			#plt.show()
 		if j == (resolution_1-1):
 			print "Warning, best fit k is at upper limit!"
-			util.plot_data(root_dir, model_name, theta_max, nicelog_snr)
-			plt.show()
+			#util.plot_data(root_dir, model_name, theta_max, nicelog_snr)
+			#plt.show()
 
 		if k == 0:
 			print "Warning, best fit s0 is at lower limit!"
-			util.plot_data(root_dir, model_name, theta_max, nicelog_snr)
-			plt.show()
+			#util.plot_data(root_dir, model_name, theta_max, nicelog_snr)
+			#plt.show()
 		if k == (resolution_1-1):
 			print "Warning, best fit s0 is at upper limit!"
-			util.plot_data(root_dir, model_name, theta_max, nicelog_snr)
-			plt.show()
+			#util.plot_data(root_dir, model_name, theta_max, nicelog_snr)
+			#plt.show()
 
 		if l == 0:
 			print "Warning, best fit alpha is at lower limit!"
-			util.plot_data(root_dir, model_name, theta_max, nicelog_snr)
-			plt.show()
+			#util.plot_data(root_dir, model_name, theta_max, nicelog_snr)
+			#plt.show()
 		if l == (resolution_1-1):
 			print "Warning, best fit alpha is at upper limit!"
-			util.plot_data(root_dir, model_name, theta_max, nicelog_snr)
-			plt.show()
-
-	'''
-	# Preparing for second run
-	a_min, a_max = (1.-second_run_offset)*a_par[i], (1.+second_run_offset)*a_par[i] 
-	k_min, k_max = (1.-second_run_offset)*k_par[j], (1.+second_run_offset)*k_par[j] 
-	s0_min, s0_max = (1.-second_run_offset)*s0_par[k], (1.+second_run_offset)*s0_par[k] 
-	alpha_min, alpha_max = (1.-second_run_offset)*alpha_par[l], (1.+second_run_offset)*alpha_par[l]
-
-	a_par = np.linspace(a_min,a_max,resolution_2)
-	k_par = np.linspace(k_min,k_max,resolution_2)
-	s0_par = np.linspace(s0_min,s0_max,resolution_2)
-	alpha_par = np.linspace(alpha_min,alpha_max,resolution_2)
-
-	likelihoods = np.ones((resolution_2,resolution_2,resolution_2,resolution_2))
-	max_like = 0.
-
-	for ii in np.arange(resolution_2):
-		for jj in np.arange(resolution_2):
-			for kk in np.arange(resolution_2):
-				for ll in np.arange(resolution_2):
-					theta = a_par[ii], k_par[jj], s0_par[kk], alpha_par[ll]
-					likelihoods[ii,jj,kk,ll] = np.exp(lnlike(theta,ssfr,snr,snr_err))
-
-	i,j,k,l = np.unravel_index(likelihoods.argmax(), likelihoods.shape)
-	theta_max = a_par[i], k_par[j], s0_par[k], alpha_par[l]
-
-	if i == 0:
-		print "Warning, best fit a is at lower limit!"
-	if i == (resolution_2-1):
-		print "Warning, best fit a is at upper limit!"
-
-	if j == 0:
-		print "Warning, best fit k is at lower limit!"
-	if j == (resolution_2-1):
-		print "Warning, best fit k is at upper limit!"
-
-	if k == 0:
-		print "Warning, best fit s0 is at lower limit!"
-	if k == (resolution_2-1):
-		print "Warning, best fit s0 is at upper limit!"
-
-	if l == 0:
-		print "Warning, best fit alpha is at lower limit!"
-	if l == (resolution_2-1):
-		print "Warning, best fit alpha is at upper limit!"
-	'''
+			#util.plot_data(root_dir, model_name, theta_max, nicelog_snr)
+			#plt.show()
 
 	theta_pass = theta_max
-	print theta_pass
+	
 	#print "ML parameters:"
 	
 	return theta_pass
@@ -347,25 +302,42 @@ def run_scipy(ssfr, snr, snr_err):
 	return theta_pass
 
 def bootstrap_uncertainties():
+	
 	time_start = time.time()
-	a_min, a_max = 1e-13, 7.e-13
-	k_min, k_max = 0.1, 1.
-	s0_min, s0_max = 1e-10, 2e-10
-	alpha_min, alpha_max = 0.6, 9.
+	a_min, a_max = 0.1e-13, 3.5e-13
+	k_min, k_max = 0.1, 1.5
+	s0_min, s0_max = 0.1e-10, 7e-10
+	alpha_min, alpha_max = 0.1, 1.2
 
-	n_runs = 2
+	n_runs = 5
 	pars = np.zeros((4,n_runs))
 
 	ssfr, snr, snr_err = util.read_data()
 
+	ndata = len(ssfr)
+	index_array = np.arange(ndata)
+
 	#plt.figure()
 	#ax = plt.subplot()
-	
-	for ii in range(n_runs):
+	counter = 0
+	while counter < n_runs:
+		ii = counter
 		print ii
-		snr_shift = snr + np.random.normal(size=len(snr)) * snr_err
-		pars[:,ii] = run_grid_fast(ssfr, snr_shift, snr_err)
-		#plt.plot(np.log10(ssfr),snr_shift,'bo',alpha=0.05)
+		#snr_shift = snr + np.random.normal(size=len(snr)) * snr_err
+
+		indices = np.random.choice(index_array,size=ndata,replace=True)
+
+		ssfr_sub = ssfr[indices]
+		snr_sub = snr[indices]
+		snr_err_sub = snr_err[indices]
+		pars[:,ii] = run_grid_fast(ssfr_sub, snr_sub, snr_err_sub)
+		if np.isclose(pars[:,ii][3]-alpha_min,0.):
+			counter -= 1
+
+		#util.plot_data(root_dir, model_name, pars[:,ii], nicelog_snr)
+		#plt.show()
+		#plt.plot(np.log10(ssfr_sub),snr_sub,'bo',alpha=0.05)
+		counter += 1
 	#plt.errorbar(np.log10(ssfr),snr,yerr=snr_err,fmt='o',color='k')
 	#plt.xlabel('log(sSFR)',size='large')
 	#plt.ylabel('sSNR',size='large')
@@ -373,7 +345,7 @@ def bootstrap_uncertainties():
 	#plt.xlim((-13,-8))
 	#plt.ylim((5e-15,6e-12))
 		
-	'''
+	
 	plt.figure()
 	plt.hist(pars[0,:],bins=10,range=(a_min,a_max))
 	plt.xlabel('a')
@@ -389,10 +361,10 @@ def bootstrap_uncertainties():
 	plt.figure()
 	plt.hist(pars[3,:],bins=10,range=(alpha_min,alpha_max))
 	plt.xlabel('alpha')
-	'''
+	
 	runtime = time.time() - time_start
-	np.savetxt('bootstrap_parameters.txt',pars.T)
-	np.savetxt('runtime.txt',np.array([runtime]),fmt='%4.2f')
+	#np.savetxt('bootstrap_parameters.txt',pars.T)
+	#np.savetxt('runtime.txt',np.array([runtime]),fmt='%4.2f')
 	
 
 root_dir = '/Users/perandersen/Data/SNR-AB/'
