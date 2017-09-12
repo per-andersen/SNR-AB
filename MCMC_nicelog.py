@@ -211,9 +211,9 @@ def run_grid_fast(ssfr, snr, snr_err):
 	resolution_1, resolution_2 = 40, 10
 	second_run_offset = 0.6
 
-	a_min, a_max = 0.1e-13, 3.5e-13
-	k_min, k_max = 0.1, 1.5
-	s0_min, s0_max = 0.1e-10, 7e-10
+	a_min, a_max = 0.1e-13, 4.0e-13
+	k_min, k_max = 0.1, 2.0
+	s0_min, s0_max = 0.05e-10, 7e-10
 	alpha_min, alpha_max = 0.1, 1.2
 
 	warnings = True
@@ -304,12 +304,13 @@ def run_scipy(ssfr, snr, snr_err):
 def bootstrap_uncertainties():
 	
 	time_start = time.time()
-	a_min, a_max = 0.1e-13, 3.5e-13
-	k_min, k_max = 0.1, 1.5
-	s0_min, s0_max = 0.1e-10, 7e-10
+	
+	a_min, a_max = 0.1e-13, 4.0e-13
+	k_min, k_max = 0.1, 2.0
+	s0_min, s0_max = 0.05e-10, 7e-10
 	alpha_min, alpha_max = 0.1, 1.2
 
-	n_runs = 5
+	n_runs = 100
 	pars = np.zeros((4,n_runs))
 
 	ssfr, snr, snr_err = util.read_data()
@@ -363,8 +364,8 @@ def bootstrap_uncertainties():
 	plt.xlabel('alpha')
 	
 	runtime = time.time() - time_start
-	#np.savetxt('bootstrap_parameters.txt',pars.T)
-	#np.savetxt('runtime.txt',np.array([runtime]),fmt='%4.2f')
+	np.savetxt('bootstrap_parameters.txt',pars.T)
+	np.savetxt('runtime.txt',np.array([runtime]),fmt='%4.2f')
 	
 
 root_dir = '/Users/perandersen/Data/SNR-AB/'
