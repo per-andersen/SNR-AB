@@ -21,7 +21,6 @@ def piecewise_snr(ssfr,theta):
 		
 		else:
 			snr_return[ii] = ssfr[ii]**(slope) * offset
-
 	return snr_return
 
 def lnlike(theta, ssfr, snr, snr_err):
@@ -252,16 +251,54 @@ def run_grid():
 	print theta_pass
 	return theta_pass
 
+def prompt_fraction(theta):
+	slope, offset, s1, s2 = theta
+	k1 = (s1**slope) * offset
+	k2 = ( (s2**slope) * offset / s2 - k1/s1) / (np.log(s1/s2))
+	return (k1/s1) / (k1/s1 + k2*np.log(s1/s2))
+
+def numerical_uncertainties():
+
+	theta_pass = np.array([0.5859, 1.1905e-7, 1.037e-9, 1.006e-11])
+
+	'''
+	# Small test
+	def test_func(theta):
+		a, b, c = theta
+		return b*a**2 + c
+	dpa = util.numerical_derivative(test_func,0.01,np.array([2.,0.1,3.]),0)
+	dpb = util.numerical_derivative(test_func,0.001,np.array([2.,0.1,3.]),1)
+	dpc = util.numerical_derivative(test_func,0.01,np.array([2.,0.1,3.]),2)
+	print dpa, dpb, dpc
+	'''
+
+	dp1 = util.numerical_derivative(prompt_fraction,0.0001,theta_pass,0)
+	dp2 = util.numerical_derivative(prompt_fraction,1e-8,theta_pass,1)
+	dp3 = util.numerical_derivative(prompt_fraction,1e-12,theta_pass,2)
+	dp4 = util.numerical_derivative(prompt_fraction,1e-14,theta_pass,3)
+
+	s1, s2, s3, s4 = 0.084, 2.2e-7, 0.41e-9, 0.55e-11
+	print dp1 
+	print dp2
+	print dp3
+	print dp4
+
+	print (dp1*s1)**2, (dp2*s2)**2, (dp3*s3)**2, (dp4*s4)**2
+	spf = np.sqrt((dp1*s1)**2 + (dp2*s2)**2 + (dp3*s3)**2 + (dp4*s4)**2)
+	print "p_f", prompt_fraction(theta_pass), "+/-", spf
+
 root_dir = '/Users/perandersen/Data/SNR-AB/'
 model_name = 'piecewise'
 
 if __name__ == '__main__':
 	t0 = time.time()
 
+	numerical_uncertainties()
 	#theta_pass = run_emcee()
-	theta_pass = run_grid()
+	#theta_pass = run_grid()
 	#theta_pass = 0.53, 3.1e-8, 1e-11, 2e-9
 
+	'''
 	ssfr, snr, snr_err = util.read_data()
 	chi2 = np.sum( ((snr-piecewise_snr(ssfr, theta_pass))/snr_err)**2.  )
 	bic = chi2 + 4.*np.log(len(ssfr))
@@ -277,6 +314,7 @@ if __name__ == '__main__':
 	print "KS", ks_test
 	
 	util.plot_data_log(root_dir,model_name,theta_pass,piecewise_snr)
+	'''
 
 	plt.show()
 

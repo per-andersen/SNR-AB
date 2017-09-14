@@ -2,6 +2,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle as pick
+from copy import deepcopy
 
 def do_chains_exist(model_name,root_dir):
 	if os.path.isfile(root_dir + 'Data/MCMC_' + model_name + '.pkl'):
@@ -82,8 +83,6 @@ def plot_data_log(root_dir, model_name, theta, snr_func,combined_plot=False):
 		plt.legend(frameon=False, loc=2, fontsize=16)
 		plt.savefig(root_dir + 'Plots/model_' + model_name + '.pdf')
 
-	
-
 def plot_data(root_dir, model_name, theta, snr_func,combined_plot=False):
 	logssfr_sul, snr_sul, snr_err_sul, logssfr_mat, snr_mat, snr_err_mat = read_data_names()
 
@@ -102,9 +101,7 @@ def plot_data(root_dir, model_name, theta, snr_func,combined_plot=False):
 	plt.errorbar(logssfr_mat,snr_mat,yerr=snr_err_mat,fmt='x',label='Smith et al. (2012)')
 	if combined_plot == False:
 		plt.legend(frameon=False, loc=2, fontsize=17)
-		plt.savefig(root_dir + 'Plots/model_' + model_name + '.pdf')
-
-	
+		plt.savefig(root_dir + 'Plots/model_' + model_name + '.pdf')	
 
 def plot_combined(root_dir, model_names, thetas, snr_funcs, logornot):
 	logssfr_sul, snr_sul, snr_err_sul, logssfr_mat, snr_mat, snr_err_mat = read_data_names()
@@ -162,6 +159,17 @@ def ks_test(ssfr,snr,snr_func,theta,visualise=False,model_name='test',plot_color
 		plt.axvline(ssfr[ks_index],ymin=np.min((ks_model[ks_index],ks_data[ks_index])),ymax=np.max((ks_model[ks_index],ks_data[ks_index])),color='k',lw=3)
 	return ks_result
 
+def numerical_derivative(function,stepSize,baseParameters,parameterNumber):
+	
+	rightParameters = deepcopy(baseParameters)
+	rightParameters[parameterNumber] += stepSize
+	rightStep = function(rightParameters)
+
+	leftParameters = deepcopy(baseParameters)
+	leftParameters[parameterNumber] -= stepSize
+	leftStep = function(leftParameters)
+
+	return (rightStep-leftStep) / (2.*stepSize)
 
 
 

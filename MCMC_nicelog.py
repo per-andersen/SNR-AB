@@ -12,7 +12,6 @@ def nicelog_snr(logssfr,theta):
 	a, k, ssfr0, alpha = theta
 	logssfr0 = np.log10(ssfr0)
 	ssfr = 10**logssfr
-
 	return a + a * np.log(ssfr/ssfr0 + alpha) / k
 
 def lnprior(theta):
@@ -310,7 +309,7 @@ def bootstrap_uncertainties():
 	s0_min, s0_max = 0.05e-10, 7e-10
 	alpha_min, alpha_max = 0.1, 1.2
 
-	n_runs = 100
+	n_runs = 400
 	pars = np.zeros((4,n_runs))
 
 	ssfr, snr, snr_err = util.read_data()
@@ -366,7 +365,6 @@ def bootstrap_uncertainties():
 	runtime = time.time() - time_start
 	np.savetxt('bootstrap_parameters.txt',pars.T)
 	np.savetxt('runtime.txt',np.array([runtime]),fmt='%4.2f')
-	
 
 root_dir = '/Users/perandersen/Data/SNR-AB/'
 model_name = 'nicelog'
@@ -377,20 +375,21 @@ if __name__ == '__main__':
 	ssfr, snr, snr_err = util.read_data()
 	#run_scipy(ssfr, snr, snr_err)
 
-	bootstrap_uncertainties()
+	#bootstrap_uncertainties()
+	#numerical_uncertainties()
 
-	'''
+	
 	logssfr, ssfr, snr, snr_err = util.read_data_with_log()
 
-	theta_pass = run_emcee()
-	theta_pass = run_grid()
+	#theta_pass = run_emcee()
+	#theta_pass = run_grid()
 	theta_pass = 4.2e-14, 0.272, 3.8e-11, 0.9
 
 	
 	chi2 = np.sum( ((snr-nicelog_snr(logssfr, theta_pass))/snr_err)**2.  )
 	bic = chi2 + 4.*np.log(len(logssfr))
 	aic = chi2 + 4.*2.
-	ks_test = util.ks_test(np.log10(ssfr),snr,nicelog_snr,theta_pass,visualise=False)
+	ks_test = util.ks_test(np.log10(ssfr),snr,nicelog_snr,theta_pass,visualise=True)
 
 	print ""
 	print "BIC", bic
@@ -400,8 +399,9 @@ if __name__ == '__main__':
 	print "KS", ks_test
 	
 	util.plot_data(root_dir, model_name, theta_pass, nicelog_snr)
+	
 
-	'''
+	
 
 	print "Done in", time.time() - t0, "seconds"
 

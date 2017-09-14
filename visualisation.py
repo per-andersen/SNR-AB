@@ -97,7 +97,7 @@ def plot_column_two(thetas,oplot_ab=True):
 	plt.savefig(root_dir + 'Plots/columnplottwo.pdf',format='pdf')
 
 def plot_bootstrap():
-	parameters = np.genfromtxt(root_dir + 'Bootstrap/bootstrap_parameters_1.txt')
+	parameters = np.genfromtxt(root_dir + 'Bootstrap/bootstrap_parameters_4.txt')
 	
 	par1 = parameters[:,0]
 	par2 = parameters[:,1]
@@ -105,19 +105,19 @@ def plot_bootstrap():
 	par4 = parameters[:,3]
 
 	plt.figure()
-	plt.hist(par1)
+	plt.hist(par1,bins=20)
 	plt.title('a')
 
 	plt.figure()
-	plt.hist(par2)
+	plt.hist(par2,bins=20)
 	plt.title('k')
 
 	plt.figure()
-	plt.hist(par3)
+	plt.hist(par3,bins=20)
 	plt.title('ssfr0')
 
 	plt.figure()
-	plt.hist(par4)
+	plt.hist(par4,bins=20)
 	plt.title('alpha')
 
 #plot_column_two(thetas)

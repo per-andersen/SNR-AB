@@ -134,7 +134,7 @@ def run_emcee():
 	c = ChainConsumer()
 	c.add_chain(samples, parameters=["$A$", "$B$"])
 	#figw = c.plotter.plot_walks()
-	fig = c.plotter.plot(figsize=(8,6))
+	fig = c.plotter.plot(figsize=(6.5,5))
 	fig.savefig(root_dir + 'Plots/marginals_simple.pdf')
 	summary =  c.analysis.get_summary()
 
@@ -156,12 +156,12 @@ if __name__ == '__main__':
 	
 	logssfr, ssfr, snr, snr_err = util.read_data_with_log()
 	
-	#theta_pass = run_emcee()
-	theta_pass = run_grid()
+	theta_pass = run_emcee()
+	#theta_pass = run_grid()
 	chi2 = np.sum( ((snr-simple_snr(logssfr, theta_pass))/snr_err)**2.  )
 	bic = chi2 + 2.*np.log(len(logssfr))
 	aic = chi2 + 2.*2.
-	ks_test = util.ks_test(np.log10(ssfr),snr,simple_snr,theta_pass,visualise=True)
+	ks_test = util.ks_test(np.log10(ssfr),snr,simple_snr,theta_pass,visualise=False)
 
 	print "Done in", time.time() - t0, "seconds"
 	print ""
