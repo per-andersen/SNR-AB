@@ -260,6 +260,7 @@ def prompt_fraction(theta):
 def numerical_uncertainties():
 
 	theta_pass = np.array([0.5859, 1.1905e-7, 1.037e-9, 1.006e-11])
+	theta_pass[2] = 0.5e-9
 
 	'''
 	# Small test
@@ -285,7 +286,58 @@ def numerical_uncertainties():
 
 	print (dp1*s1)**2, (dp2*s2)**2, (dp3*s3)**2, (dp4*s4)**2
 	spf = np.sqrt((dp1*s1)**2 + (dp2*s2)**2 + (dp3*s3)**2 + (dp4*s4)**2)
-	print "p_f", prompt_fraction(theta_pass), "+/-", spf
+	print "f_p", prompt_fraction(theta_pass), "+/-", spf
+
+def bootstrap_fp_uncertainties():
+	theta_pass = np.array([0.5859, 1.1905e-7, 1.037e-9, 1.006e-11],dtype=np.float128)
+	sigmas = np.array([0.084, 2.2e-7, 0.41e-9, 0.55e-11],dtype=np.float128)
+
+	theta_pass[2] = 2.e-9
+
+	prompt_fraction_max = prompt_fraction(theta_pass)
+
+	prompt_fractions = np.array([])
+	for ii in np.arange(100000):
+		try:
+			theta_new = theta_pass + np.random.normal(size=4) * sigmas
+			theta_new[2] = 2.e-9
+			fp = prompt_fraction(theta_new)
+			if np.isnan(fp):
+				continue
+			prompt_fractions = np.append(prompt_fractions, fp)
+		except:
+			continue
+
+	hist, bin_edges = np.histogram(prompt_fractions,bins=80,range=(0.,1.),density=True)
+	bin_midpoints = bin_edges[:-1] + (bin_edges[1:] - bin_edges[:-1]) / 2.
+
+	
+
+	index_max = np.argmin( np.abs(bin_midpoints - prompt_fraction_max) )
+	bin_max = bin_midpoints[index_max]
+
+	prob = 0.
+	index_right = 1
+	while prob < 0.34:
+		prob = np.trapz(hist[index_max:index_max+index_right],bin_edges[index_max:index_max+index_right])
+		index_right += 1
+	bin_right = bin_midpoints[index_max + index_right]
+
+	prob = 0.
+	index_left = 2
+	while prob < 0.34:
+		prob = np.trapz(hist[index_max-index_left:index_max+1],bin_edges[index_max-index_left:index_max+1])
+		index_left += 1
+	bin_left = bin_midpoints[index_max - index_left]
+
+	plt.figure()
+	plt.xlim((0,1))
+	plt.hist(prompt_fractions,bins=80,range=(0.,1.),normed=True)
+	plt.axvline(bin_left,c='r')
+	plt.axvline(bin_max,c='g')
+	plt.axvline(bin_right,c='b')
+
+	print "f_p : ", prompt_fraction_max, "+", bin_right - bin_max, "/-", np.abs(bin_max - bin_left)
 
 root_dir = '/Users/perandersen/Data/SNR-AB/'
 model_name = 'piecewise'
@@ -293,10 +345,10 @@ model_name = 'piecewise'
 if __name__ == '__main__':
 	t0 = time.time()
 
-	numerical_uncertainties()
+	#numerical_uncertainties()
+	bootstrap_fp_uncertainties()
 	#theta_pass = run_emcee()
 	#theta_pass = run_grid()
-	#theta_pass = 0.53, 3.1e-8, 1e-11, 2e-9
 
 	'''
 	ssfr, snr, snr_err = util.read_data()
@@ -315,6 +367,8 @@ if __name__ == '__main__':
 	
 	util.plot_data_log(root_dir,model_name,theta_pass,piecewise_snr)
 	'''
+
+	print "Done in", time.time() - t0, "seconds"
 
 	plt.show()
 

@@ -382,8 +382,8 @@ if __name__ == '__main__':
 	logssfr, ssfr, snr, snr_err = util.read_data_with_log()
 
 	#theta_pass = run_emcee()
-	#theta_pass = run_grid()
-	theta_pass = 4.2e-14, 0.272, 3.8e-11, 0.9
+	theta_pass = run_grid()
+	#theta_pass = 4.2e-14, 0.272, 3.8e-11, 0.9
 
 	
 	chi2 = np.sum( ((snr-nicelog_snr(logssfr, theta_pass))/snr_err)**2.  )
