@@ -1,8 +1,13 @@
 import os
 import numpy as np
+from scipy.interpolate import interp1d
+from scipy.integrate import quad
 import matplotlib.pyplot as plt
 import pickle as pick
 from copy import deepcopy
+import h5py
+from Papaya import ReadPapayaHDF5
+import time
 
 def do_chains_exist(model_name,root_dir):
 	if os.path.isfile(root_dir + 'Data/MCMC_' + model_name + '.pkl'):
@@ -171,9 +176,93 @@ def numerical_derivative(function,stepSize,baseParameters,parameterNumber):
 
 	return (rightStep-leftStep) / (2.*stepSize)
 
+def dtd(tau):
+	if tau < 0.964e9:
+		return 6.48e-13
+	else:
+		return 4.0e-4*tau**(-1)
 
+def get_illustris_mass_sfr_snr(root_dir='/Users/perandersen/Data/SNR-AB/',ii=0,tt=13e9):
+	
+	Data,Header = ReadPapayaHDF5(root_dir + 'SFH160607A/SFR_Subhalo_%5.5d.hdf5'%ii)
 
+	#Data['time'][0] = 0.
+	#times = 14.0e9-Data['time'][::-1]
+	#Data['SFR'] = Data['SFR'][::-1]
 
+	Data['time'][0] = 0.
+	times = Data['time'][::-1]
+	Data['SFR'] = Data['SFR']#[::-1]
+
+	#plt.figure()
+	#plt.plot(times,Data['SFR'])
+	#plt.show()
+
+	sfr_func = interp1d(times,Data['SFR'])
+
+	delaytimes = np.zeros(len(times))
+	sfr_interpolated = sfr_func(times)
+
+	convolution = lambda tau,time: dtd(tau)*sfr_func(time-tau)
+
+	#mass = Header['M200']*1e10/0.7
+	mass = quad(sfr_func,0.,tt,limit=1000)[0]
+	#print mass
+
+	snr = quad(convolution,0.,tt,args=(tt),limit=1000,full_output=1)[0]
+
+	#print 'i:',ii
+	#print 'mass', mass
+	#print 'sSNR', snr/mass
+	#print 'log(sSFR)', np.log10(sfr_func(times[-1])/mass)
+	#print ''
+
+	return mass, sfr_func(tt), snr
+
+def get_illustris_time_series(ntimes=18,tstart=1.5,tend=13.9,ii=0):
+	masses = np.zeros(ntimes)
+	sfrs = np.zeros(ntimes)
+	snrs = np.zeros(ntimes)
+	times = np.linspace(tstart,tend,ntimes)
+	for jj, tt in np.ndenumerate(times):
+		masses[jj], sfrs[jj], snrs[jj] = get_illustris_mass_sfr_snr(tt=tt*1e9,ii=ii)
+
+	return np.log10(sfrs/masses), snrs/masses, times
+
+def get_illustris_ssfr_ssnr(root_dir='/Users/perandersen/Data/SNR-AB/'):
+	
+	ssfr_all = np.array([])
+	ssnr_all = np.array([])
+	times_all = np.array([])
+
+	if os.path.isfile(root_dir + 'illustris_ssnr_ssfr.pkl'):
+		pkl_data_file = open(root_dir + 'illustris_ssnr_ssfr.pkl','rb')
+		result = pick.load(pkl_data_file)
+		ssnr_all, ssfr_all, times_all = result 			
+	else:
+		for ii in [342,563,565,745,747,1380,1392,1531,1535,1635,1765,1864,1865,1887,2067,\
+				   2068,2072,2146,2147,2211,2276,2413,2469,2589,2698,2706,2741,2780,2877,\
+				   2909,2950,2988,3065,3148,3191,3236,3275,3318,3344,3351,3598,3644,3694,
+				   3729,3845,3996,4122,4203,4244,4378,4473,4570,4721,0,1,2,3,3000,4500,6000,\
+				   9000,10000,11000,12000,13000,14000,15000,18000,19000,20000,21000,24000,\
+				   25000,26000,27000,29275]:
+			print ii
+			ssfr, ssnr, times = get_illustris_time_series(ii=ii)
+			ssfr_all = np.append(ssfr_all,ssfr)
+			ssnr_all = np.append(ssnr_all,ssnr)
+			times_all = np.append(times_all,times)
+		output = open(root_dir + 'illustris_ssnr_ssfr.pkl','wb')
+		result = ssnr_all, ssfr_all, times_all
+ 		pick.dump(result,output)
+ 		output.close()
+ 	return ssnr_all, ssfr_all, times_all
+
+if __name__ == '__main__':
+	
+	t0 = time.time()
+
+	print "Done in", time.time() - t0, "seconds"
+	plt.show()
 
 
 

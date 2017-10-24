@@ -292,7 +292,7 @@ def bootstrap_fp_uncertainties():
 	theta_pass = np.array([0.5859, 1.1905e-7, 1.037e-9, 1.006e-11],dtype=np.float128)
 	sigmas = np.array([0.084, 2.2e-7, 0.41e-9, 0.55e-11],dtype=np.float128)
 
-	theta_pass[2] = 2.e-9
+	#theta_pass[2] = 2.e-9
 
 	prompt_fraction_max = prompt_fraction(theta_pass)
 
@@ -300,7 +300,7 @@ def bootstrap_fp_uncertainties():
 	for ii in np.arange(100000):
 		try:
 			theta_new = theta_pass + np.random.normal(size=4) * sigmas
-			theta_new[2] = 2.e-9
+			#theta_new[2] = 2.e-9
 			fp = prompt_fraction(theta_new)
 			if np.isnan(fp):
 				continue

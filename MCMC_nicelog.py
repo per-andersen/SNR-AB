@@ -164,7 +164,7 @@ def run_grid():
 		print "Doing plot"
 		fig = c.plotter.plot()
 
-	
+	'''
 	plt.figure()
 	ax = plt.subplot()
 	ax.set_xscale("log")
@@ -188,7 +188,7 @@ def run_grid():
 	ax.set_xscale("log")
 	plt.plot(alpha_par,alpha_like,'x')
 	plt.xlabel('alpha')
-	
+	'''
 	
 	# These are the marginalised maximum likelihood parameters
 	a_fit = a_par[np.argmax(a_like)]

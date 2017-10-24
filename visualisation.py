@@ -59,7 +59,7 @@ def plot_column_three(thetas,oplot_ab=True):
 	plt.savefig(root_dir + 'Plots/columnplot.pdf',format='pdf')
 
 
-def plot_column_two(thetas,oplot_ab=True):
+def plot_column_two(oplot_ab=True):
 	theta_contin = contin.run_grid()
 	theta_nice = nice.run_grid()
 	theta_piece = piece.run_grid()
@@ -121,7 +121,36 @@ def plot_bootstrap():
 	plt.hist(par4,bins=10)
 	plt.title('alpha')
 
-#plot_column_two(thetas)
-plot_bootstrap()
+def plot_iilustris():
+
+	f, ax = plt.subplots()
+	ax.set_yscale("log")
+
+	theta_piece = piece.run_grid()
+	theta_nice = nice.run_grid()
+
+	ssfr_values = np.logspace(-13,-8,10000)
+	snr_piecewise = piece.piecewise_snr(ssfr_values, theta_piece)
+	snr_nicelog = nice.nicelog_snr(np.log10(ssfr_values),theta_nice)
+	#plt.plot(np.log10(ssfr_values), snr_piecewise,c='k',lw=3)
+	util.plot_data_log(root_dir, 'piece', theta_piece, piece.piecewise_snr,combined_plot=True)
+	#plt.plot(np.log10(ssfr_values), snr_nicelog,c='k',lw=3)
+
+
+	ssnr_all, ssfr_all, times_all = util.get_illustris_ssfr_ssnr()
+
+	plt.scatter(ssfr_all,ssnr_all,c=times_all,cmap='Reds',vmin=0.,vmax=13.5)
+	plt.xlim((-13,-8))
+	plt.ylim((2e-14,2e-12))
+	ax.set_ylabel(r'sSNR',size='x-large')
+	ax.set_xlabel(r'log(sSFR)',size='x-large')
+	plt.colorbar(ticks=[0,2,4,6,8,10,12,13.5])
+	plt.legend(frameon=False, loc=2, fontsize=13)
+
+	plt.savefig(root_dir + 'Plots/illustris.pdf',format='pdf')
+
+#plot_column_two()
+#plot_bootstrap()
+plot_iilustris()
 
 plt.show()
