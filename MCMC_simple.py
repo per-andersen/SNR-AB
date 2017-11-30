@@ -4,6 +4,7 @@ import numpy as np
 import emcee
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
+import matplotlib as mpl
 from chainconsumer import ChainConsumer
 import pickle as pick
 import time
@@ -135,7 +136,25 @@ def run_emcee():
 	c.add_chain(samples, parameters=["$A$", "$B$"])
 	#figw = c.plotter.plot_walks()
 	fig = c.plotter.plot(figsize=(6.5,5))
+	
+
+	axes = fig.get_axes()
+	for ticks in axes[2].get_yticklabels():
+		ticks.set_fontsize(16)
+	axes[2].set_ylabel(axes[2].get_ylabel(),size='x-large')
+	print axes[2].get_ylabel()
+
+	for ticks in axes[2].get_xticklabels():
+		ticks.set_fontsize(16)
+	axes[2].set_xlabel(axes[2].get_xlabel(),size='x-large')
+	print axes[2].get_xlabel()
+
+	axes[0].set_title(axes[0].get_title(),size=14)
+	axes[3].set_title(axes[3].get_title(),size=14)
+	plt.subplots_adjust(left=0.11, bottom=0.14, right=0.95, top=0.94, wspace=0.1, hspace=0.05)
+
 	fig.savefig(root_dir + 'Plots/marginals_simple.pdf')
+
 	summary =  c.analysis.get_summary()
 
 	a_fit = summary["$A$"][1]
@@ -171,7 +190,7 @@ if __name__ == '__main__':
 	print "r.chi2", chi2 / (len(logssfr)-2.)
 	print "KS", ks_test
 	#theta_pass = 5e-14, 3e-4
-	util.plot_data(root_dir, model_name, theta_pass, simple_snr)
+	#util.plot_data(root_dir, model_name, theta_pass, simple_snr)
 	
 	plt.show()
 
